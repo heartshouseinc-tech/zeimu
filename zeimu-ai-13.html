@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEIMU-AI｜AI税理士・補助金アドバイザー</title>
+<style>
+:root {
+  --bg: #F2F5FA;
+  --surface: #FFFFFF;
+  --surface2: #EEF2FA;
+  --border: #D6E0F0;
+  --blue: #1A6FD4;
+  --blue-dark: #0F4FA0;
+  --blue-dim: rgba(26,111,212,0.10);
+  --blue-dim2: rgba(26,111,212,0.06);
+  --green: #12A05A;
+  --green-dim: rgba(18,160,90,0.10);
+  --red: #D32F2F;
+  --red-dim: rgba(211,47,47,0.10);
+  --orange: #E07020;
+  --orange-dim: rgba(224,112,32,0.10);
+  --text: #1A202C;
+  --text2: #4A5568;
+  --text3: #8896A8;
+  --shadow: 0 1px 4px rgba(26,60,120,0.08);
+  --shadow-md: 0 4px 16px rgba(26,60,120,0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+.hd{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--shadow);}
+.hd-logo{display:flex;align-items:center;gap:10px;}
+.hd-stamp{width:36px;height:36px;border:2.5px solid var(--blue);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--blue);transform:rotate(-3deg);background:var(--blue-dim);font-weight:900;flex-shrink:0;}
+.hd-title{font-size:17px;font-weight:800;color:var(--blue);letter-spacing:0.04em;}
+.hd-sub{font-size:9px;color:var(--text3);letter-spacing:0.08em;margin-top:1px;}
+.hd-right{display:flex;align-items:center;gap:8px;}
+.badge-year{font-size:10px;color:var(--blue);background:var(--blue-dim);padding:3px 9px;border-radius:20px;border:1px solid rgba(26,111,212,0.2);}
+.badge-ai{font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--blue),var(--blue-dark));padding:3px 9px;border-radius:20px;display:flex;align-items:center;gap:4px;}
+.badge-ai .dot{width:6px;height:6px;border-radius:50%;background:#7FE4A0;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.8)}}
+
+/* ── NAV ── */
+.nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{flex:1;min-width:60px;padding:11px 6px 9px;background:none;border:none;border-bottom:3px solid transparent;color:var(--text3);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;transition:all .2s;white-space:nowrap;}
+.nav-btn .ic{font-size:19px;}
+.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--blue-dim2);}
+.nav-btn:hover:not(.active){color:var(--text);background:var(--surface2);}
+
+/* ── MAIN ── */
+.main{padding:14px;max-width:860px;margin:0 auto;}
+.sec{display:none;}.sec.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:12px;box-shadow:var(--shadow);}
+.card-hd{font-size:12px;font-weight:700;color:var(--blue-dark);margin-bottom:12px;display:flex;align-items:center;gap:7px;letter-spacing:.04em;}
+.card-hd::before{content:'';display:block;width:3px;height:14px;background:var(--blue);border-radius:2px;flex-shrink:0;}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;box-shadow:var(--shadow);}
+.stat-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.04em;}
+.stat-val{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
+.stat-val.inc{color:var(--green);}
+.stat-val.exp{color:var(--red);}
+.stat-val.tax{color:var(--blue);}
+.stat-val.cnt{color:var(--text);}
+.stat-unit{font-size:11px;font-weight:500;margin-left:2px;}
+
+/* ── PROGRESS ── */
+.prog-wrap{margin-bottom:10px;}
+.prog-hd{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px;}
+.prog-bar{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+.prog-fill.blue{background:linear-gradient(90deg,var(--blue),#5AA0F0);}
+.prog-fill.green{background:var(--green);}
+.prog-fill.orange{background:var(--orange);}
+
+/* ── RECENT LIST ── */
+.r-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--surface2);}
+.r-item:last-child{border-bottom:none;}
+.r-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.r-ic.i{background:var(--green-dim);}
+.r-ic.e{background:var(--red-dim);}
+.r-info{flex:1;min-width:0;}
+.r-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.r-date{font-size:10px;color:var(--text3);margin-top:1px;}
+.r-amt{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0;}
+.r-amt.i{color:var(--green);}
+.r-amt.e{color:var(--red);}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2px dashed rgba(26,111,212,.35);border-radius:var(--radius);padding:28px 16px;text-align:center;cursor:pointer;background:rgba(26,111,212,.03);margin-bottom:12px;transition:all .2s;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:var(--blue-dim);}
+.upload-icon{font-size:38px;margin-bottom:8px;}
+.upload-text{font-size:13px;color:var(--text2);line-height:1.6;}
+.upload-text strong{color:var(--blue);}
+
+/* ── RESULT CARD ── */
+.result-card{background:#F0FAF5;border:1px solid rgba(18,160,90,.3);border-radius:var(--radius);padding:14px;margin-bottom:12px;display:none;}
+.result-card.show{display:block;}
+.result-stamp{display:inline-block;background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:3px;transform:rotate(-1deg);margin-bottom:10px;}
+.result-grid{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;align-items:center;}
+.rk{font-size:11px;color:var(--text3);}
+.rv{font-size:13px;font-weight:500;}
+.rv.big{font-size:17px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums;}
+.rv.tag{display:inline-block;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(26,111,212,.25);padding:2px 9px;border-radius:12px;font-size:11px;}
+
+/* ── FORM ── */
+.frow{margin-bottom:11px;}
+.flbl{font-size:11px;color:var(--text3);margin-bottom:4px;display:flex;justify-content:space-between;}
+.flbl span{color:var(--blue);font-size:10px;}
+.finput{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .2s;font-variant-numeric:tabular-nums;}
+.finput:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim);}
+
+/* ── JOURNAL TABLE ── */
+.filter-row{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+.fbtn{padding:5px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;color:var(--text3);font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s;}
+.fbtn.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);font-weight:700;}
+.jtbl{width:100%;border-collapse:collapse;font-size:12px;}
+.jtbl th{background:var(--surface2);color:var(--text3);padding:8px 10px;text-align:left;font-weight:600;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.04em;}
+.jtbl td{padding:9px 10px;border-bottom:1px solid var(--surface2);vertical-align:middle;}
+.jtbl tr:hover td{background:var(--blue-dim2);}
+.jamt-i{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums;}
+.jamt-e{color:var(--red);font-weight:700;font-variant-numeric:tabular-nums;}
+.jtag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;}
+.jtag.i{background:var(--green-dim);color:var(--green);}
+.jtag.e{background:var(--red-dim);color:var(--red);}
+
+/* ── DECLARATION ── */
+.decl-sw{display:flex;gap:8px;margin-bottom:14px;}
+.dsw-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text3);font-family:inherit;font-size:13px;cursor:pointer;text-align:center;transition:all .2s;font-weight:500;}
+.dsw-btn.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);font-weight:700;}
+.calc-result{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:13px;margin-top:12px;}
+.crow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.crow:last-child{border-bottom:none;}
+.crow.deduct{color:var(--green);}
+.crow.taxrow{color:var(--red);}
+.crow.total{color:var(--blue);font-weight:800;font-size:16px;padding-top:10px;}
+
+/* ── SUBSIDY ── */
+.sub-hero{background:linear-gradient(135deg,#1A6FD4,#0A3A80);border-radius:14px;padding:18px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;}
+.sub-hero::after{content:'🔍';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:56px;opacity:.12;}
+.sub-hero h2{font-size:16px;font-weight:800;margin-bottom:4px;letter-spacing:.03em;}
+.sub-hero p{font-size:11px;opacity:.88;line-height:1.5;}
+.search-sources{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.src-badge{display:flex;align-items:center;gap:4px;padding:5px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:10px;color:var(--text2);font-weight:600;cursor:default;}
+.src-badge .src-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.src-badge.active .src-dot{background:var(--green);}
+.src-badge.active{border-color:rgba(18,160,90,.4);color:var(--green);}
+.chip-group{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px;}
+.chip{padding:7px 13px;border:1.5px solid var(--border);border-radius:20px;font-size:12px;color:var(--text2);background:var(--surface);cursor:pointer;transition:all .18s;font-family:inherit;font-weight:500;}
+.chip.sel{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700;}
+.chip:hover:not(.sel){border-color:var(--blue);color:var(--blue);}
+.chip-lbl{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.04em;margin-bottom:6px;}
+.search-btn{width:100%;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;border:none;border-radius:var(--radius);padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;transition:opacity .2s;letter-spacing:.04em;}
+.search-btn:hover{opacity:.88;}
+.search-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+.searching-box{display:none;align-items:center;gap:10px;padding:13px 15px;background:var(--blue-dim);border:1px solid rgba(26,111,212,.25);border-radius:var(--radius);margin-bottom:12px;font-size:13px;color:var(--blue);}
+.spin{width:18px;height:18px;border:2.5px solid rgba(26,111,212,.25);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.search-step{font-size:10px;color:var(--text3);margin-top:3px;}
+
+.sub-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s;}
+.sub-item:hover{border-color:var(--blue);box-shadow:var(--shadow-md);}
+.sub-item-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.sub-type{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.04em;}
+.sub-type.gov{background:var(--green-dim);color:var(--green);border:1px solid rgba(18,160,90,.3);}
+.sub-type.pref{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(26,111,212,.25);}
+.sub-type.tax{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(224,112,32,.3);}
+.sub-priority{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.sub-priority.hi{background:var(--red-dim);color:var(--red);}
+.sub-priority.mid{background:var(--orange-dim);color:var(--orange);}
+.sub-name{font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px;line-height:1.4;}
+.sub-amount{font-size:20px;font-weight:800;color:var(--blue);margin-bottom:6px;font-variant-numeric:tabular-nums;}
+.sub-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:8px;}
+.sub-deadline{font-size:11px;color:var(--orange);font-weight:600;margin-bottom:8px;}
+.sub-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.sub-tag{font-size:10px;padding:2px 8px;background:var(--surface2);color:var(--text3);border-radius:10px;border:1px solid var(--border);}
+.sub-source{font-size:10px;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:4px;}
+.sub-source a{color:var(--blue);text-decoration:none;}
+.sub-actions{display:flex;gap:7px;}
+.btn-ask{flex:1;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;border:none;border-radius:var(--radius-sm);padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;}
+.btn-ask:hover{opacity:.88;}
+.btn-sec{flex:1;background:transparent;color:var(--blue);border:1.5px solid rgba(26,111,212,.35);border-radius:var(--radius-sm);padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-sec:hover{background:var(--blue-dim);}
+
+/* ── AI CHAT ── */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 290px);min-height:340px;}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;background:var(--surface2);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border);border-bottom:none;scrollbar-width:thin;scrollbar-color:rgba(26,111,212,.2) transparent;}
+.msg{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse;}
+.msg-av{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.msg-av.ai{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;transform:rotate(-2deg);}
+.msg-av.user{background:var(--surface2);border:1px solid var(--border);font-size:16px;}
+.msg-bub{max-width:82%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.7;}
+.msg.ai .msg-bub{background:var(--surface);border:1px solid var(--border);border-radius:0 12px 12px 12px;box-shadow:var(--shadow);}
+.msg.user .msg-bub{background:var(--blue-dim);border:1px solid rgba(26,111,212,.25);border-radius:12px 0 12px 12px;color:var(--blue-dark);}
+.msg-time{font-size:10px;color:var(--text3);margin-top:3px;}
+.typing-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--blue);margin:0 2px;animation:tb 1.2s ease-in-out infinite;}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes tb{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+.chat-input-area{display:flex;gap:8px;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow);}
+.chat-ta{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;resize:none;min-height:42px;max-height:100px;line-height:1.4;}
+.chat-ta:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim);}
+.send-btn{width:42px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;border:none;border-radius:var(--radius-sm);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .2s;flex-shrink:0;}
+.send-btn:hover{opacity:.88;}
+.send-btn:disabled{opacity:.4;cursor:not-allowed;}
+.quick-qs{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none;}
+.quick-qs::-webkit-scrollbar{display:none;}
+.qq{white-space:nowrap;padding:6px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;font-size:11px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .2s;font-weight:500;}
+.qq:hover{color:var(--blue);border-color:var(--blue);background:var(--blue-dim);}
+
+/* ── URL CONTEXT badge ── */
+.url-ctx-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;background:var(--green-dim);color:var(--green);border:1px solid rgba(18,160,90,.3);margin-left:6px;}
+
+/* ── INFO CARDS ── */
+.info-conn{background:#F0FAF5;border:1px solid rgba(18,160,90,.3);border-radius:var(--radius-sm);padding:11px 13px;font-size:11px;line-height:1.7;color:var(--text2);}
+.info-conn b{color:#0d7a45;}
+
+/* ── BTNS ── */
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;border:none;border-radius:var(--radius);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;margin-top:10px;transition:opacity .2s;letter-spacing:.04em;}
+.btn-primary:hover{opacity:.88;}
+.btn-outline{background:transparent;color:var(--blue);border:1.5px solid rgba(26,111,212,.35);border-radius:var(--radius);padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-outline:hover{background:var(--blue-dim);}
+
+/* ── ALERTS ── */
+.alert{padding:10px 13px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:11px;line-height:1.5;}
+.alert.info{background:var(--blue-dim);border:1px solid rgba(26,111,212,.25);color:#1555a8;}
+.alert.success{background:var(--green-dim);border:1px solid rgba(18,160,90,.3);color:#0d7a45;}
+.alert.warn{background:var(--orange-dim);border:1px solid rgba(224,112,32,.3);color:#904010;}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:36px 16px;color:var(--text3);}
+.empty .ei{font-size:38px;margin-bottom:8px;}
+.empty p{font-size:13px;line-height:1.6;}
+
+/* ── MISC ── */
+.section-note{font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.5;}
+pre.code-block{background:#1A202C;color:#E2E8F0;padding:12px;border-radius:var(--radius-sm);font-size:10px;overflow-x:auto;white-space:pre-wrap;margin-top:8px;display:none;}
+
+@media(min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr);}}
+
+  /* ── CONSUMPTION TAX ── */
+  .kind-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px;text-align:center;cursor:pointer;transition:all .2s;}
+  .kind-btn:hover{border-color:var(--orange);background:var(--orange-dim);}
+  .kind-btn.kind-sel{background:var(--orange-dim);border-color:var(--orange);border-width:2px;}
+  .kind-btn.kind-active{opacity:.5;}
+  .kind-num{font-size:10px;color:var(--text3);font-weight:600;margin-bottom:2px;}
+  .kind-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3;}
+  .kind-rate{font-size:16px;font-weight:800;color:var(--orange);}
+  .kind-btn.kind-sel .kind-rate{color:var(--orange);}
+
+  /* ── DECLARATION v2 ── */
+  .decl-hero{border-radius:14px;padding:18px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;}
+  .decl-hero.sole{background:linear-gradient(135deg,#1A6FD4,#0A3A80);}
+  .decl-hero.corp{background:linear-gradient(135deg,#16A05B,#0a5c34);}
+  .decl-hero h2{font-size:16px;font-weight:800;margin-bottom:4px;}
+  .decl-hero p{font-size:11px;opacity:.9;line-height:1.5;}
+
+  .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .type-card{background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:all .2s;text-align:center;}
+  .type-card:hover{border-color:var(--blue);}
+  .type-card.sel{background:var(--blue-dim);border-color:var(--blue);}
+  .type-card.sel.green{background:var(--green-dim);border-color:var(--green);}
+  .type-card .tc-icon{font-size:24px;margin-bottom:4px;}
+  .type-card .tc-name{font-size:12px;font-weight:700;color:var(--text);}
+  .type-card .tc-sub{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;}
+  .type-card .tc-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:5px;display:inline-block;}
+  .tc-badge.best{background:var(--green-dim);color:var(--green);border:1px solid rgba(18,160,90,.3);}
+  .tc-badge.std{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(26,111,212,.25);}
+
+  .docs-list{margin-top:12px;}
+  .doc-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--surface2);}
+  .doc-item:last-child{border-bottom:none;}
+  .doc-ic{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .doc-ic.req{background:var(--red-dim);}
+  .doc-ic.opt{background:var(--blue-dim);}
+  .doc-name{font-size:12px;font-weight:600;flex:1;}
+  .doc-tag{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;}
+  .doc-tag.req{background:var(--red-dim);color:var(--red);}
+  .doc-tag.opt{background:var(--blue-dim);color:var(--blue);}
+
+  .etax-flow{margin:12px 0;}
+  .etax-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .etax-num{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .etax-body{flex:1;}
+  .etax-title{font-size:13px;font-weight:700;color:var(--text);}
+  .etax-desc{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5;}
+  .etax-link{display:inline-block;margin-top:4px;font-size:11px;color:var(--blue);font-weight:600;}
+
+  .output-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .out-btn{padding:11px 8px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:none;transition:opacity .2s;text-align:center;}
+  .out-btn:hover{opacity:.85;}
+  .out-btn.pdf{background:linear-gradient(135deg,#D32F2F,#8B0000);color:#fff;}
+  .out-btn.csv{background:linear-gradient(135deg,#16A05B,#0a5c34);color:#fff;}
+  .out-btn.xml{background:linear-gradient(135deg,#E07020,#a04010);color:#fff;}
+  .out-btn.copy{background:linear-gradient(135deg,#1A6FD4,#0A3A80);color:#fff;}
+
+  .comparison-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+  .comparison-table th{background:var(--surface2);padding:7px 8px;text-align:center;font-weight:700;border-bottom:2px solid var(--border);color:var(--text2);}
+  .comparison-table td{padding:7px 8px;border-bottom:1px solid var(--surface2);text-align:center;vertical-align:middle;}
+  .comparison-table tr:hover td{background:var(--blue-dim2);}
+  .comparison-table td:first-child{text-align:left;font-weight:600;color:var(--text);}
+  .ct-yes{color:var(--green);font-weight:700;}
+  .ct-no{color:var(--red);}
+  .ct-best{color:var(--blue);font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+
+<!-- ═══ ログイン画面 ═══ -->
+<div id="loginScreen" style="display:flex;position:fixed;inset:0;background:linear-gradient(135deg,#0A1628,#1A3A6B);align-items:center;justify-content:center;padding:20px;z-index:9999;">
+  <div style="background:#fff;border-radius:16px;padding:28px 24px;width:min(380px,100%);box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <div style="text-align:center;margin-bottom:22px;">
+      <div style="font-size:44px;margin-bottom:8px;">税</div>
+      <div style="font-size:19px;font-weight:800;color:#1A3A6B;">ZEIMU-AI</div>
+      <div style="font-size:11px;color:#8896A8;margin-top:3px;">登録済みユーザーのみ使用可能</div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:11px;font-weight:700;color:#6B7A8D;margin-bottom:4px;">メールアドレス</label>
+      <input type="email" id="zEmail" placeholder="example@company.com" autocomplete="email"
+        style="width:100%;padding:11px 12px;border:1.5px solid #C8D6E8;border-radius:8px;font-size:14px;outline:none;font-family:inherit;"
+        onkeydown="if(event.key==='Enter')document.getElementById('zPass').focus()">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:11px;font-weight:700;color:#6B7A8D;margin-bottom:4px;">パスワード</label>
+      <input type="password" id="zPass" placeholder="パスワード" autocomplete="current-password"
+        style="width:100%;padding:11px 12px;border:1.5px solid #C8D6E8;border-radius:8px;font-size:14px;outline:none;font-family:inherit;"
+        onkeydown="if(event.key==='Enter')zLogin()">
+    </div>
+    <div id="zErr" style="color:#D32F2F;font-size:12px;text-align:center;min-height:16px;margin-bottom:8px;"></div>
+    <button onclick="zLogin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#1A6FD4,#0A3A80);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">🔑 ログイン</button>
+  </div>
+</div>
+
+<!-- ═══ 管理者パネル（モーダル） ═══ -->
+<div id="adminPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:min(420px,100%);max-height:90dvh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <h2 style="font-size:17px;font-weight:800;color:#1A3A6B;">👤 ユーザー管理</h2>
+      <button onclick="closeAdminPanel()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    </div>
+    <!-- ユーザー追加 -->
+    <div style="background:#EEF2FA;border-radius:10px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:#1A3A6B;margin-bottom:12px;">➕ 新規ユーザー登録</div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:11px;font-weight:700;color:#6B7A8D;margin-bottom:4px;">表示名</label>
+        <input type="text" id="nuName" placeholder="例：山田 太郎" style="width:100%;padding:10px 12px;border:1.5px solid #C8D6E8;border-radius:7px;font-size:14px;background:#fff;font-family:inherit;outline:none;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:11px;font-weight:700;color:#6B7A8D;margin-bottom:4px;">メールアドレス</label>
+        <input type="email" id="nuEmail" placeholder="example@company.com" style="width:100%;padding:10px 12px;border:1.5px solid #C8D6E8;border-radius:7px;font-size:14px;background:#fff;font-family:inherit;outline:none;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:11px;font-weight:700;color:#6B7A8D;margin-bottom:4px;">仮パスワード</label>
+        <div style="position:relative;">
+          <input type="text" id="nuPass" placeholder="例：Temp1234!" style="width:100%;padding:10px 12px;border:1.5px solid #C8D6E8;border-radius:7px;font-size:14px;background:#fff;font-family:inherit;outline:none;">
+          <button onclick="genZPass()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#1A6FD4;color:#fff;border:none;border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;">自動生成</button>
+        </div>
+        <div style="font-size:10px;color:#8896A8;margin-top:3px;">6文字以上。初回ログイン後に変更してもらってください。</div>
+      </div>
+      <div id="nuErr" style="color:#D32F2F;font-size:12px;min-height:16px;margin-bottom:8px;"></div>
+      <button onclick="addZUser()" id="addZUserBtn" style="width:100%;padding:12px;background:linear-gradient(135deg,#1A6FD4,#0A3A80);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">登録する</button>
+    </div>
+    <!-- ユーザー一覧 -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:#1A3A6B;">📋 登録ユーザー一覧</div>
+        <button onclick="loadZUsers()" style="background:#EEF2FA;border:1px solid #C8D6E8;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#1A3A6B;">🔄 更新</button>
+      </div>
+      <div id="zUserList" style="font-size:13px;color:#888;">読み込み中...</div>
+    </div>
+  </div>
+</div>
+<header class="hd" id="appHeader" style="display:none;">
+  <div class="hd-logo">
+    <div class="hd-stamp">税</div>
+    <div>
+      <div class="hd-title">ZEIMU-AI</div>
+      <div class="hd-sub">AI TAX &amp; SUBSIDY ADVISOR</div>
+    </div>
+  </div>
+  <div class="hd-right">
+    <div class="badge-year" id="year-badge">2025年度</div>
+    <div class="badge-ai"><span class="dot"></span>Gemini 2.5 Flash</div>
+    <button id="adminMenuBtn" onclick="openAdminPanel()" style="display:none;background:var(--blue-dim);border:1px solid var(--blue);border-radius:20px;color:var(--blue);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;">👤 管理</button>
+    <button onclick="zLogout()" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;color:var(--text3);font-size:10px;padding:4px 10px;cursor:pointer;">ログアウト</button>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav" id="appNav" style="display:none;">
+  <button class="nav-btn active" onclick="goTab('dashboard')"><span class="ic">📊</span>ダッシュ</button>
+  <button class="nav-btn" onclick="goTab('receipt')"><span class="ic">📷</span>レシート</button>
+  <button class="nav-btn" onclick="goTab('journal')"><span class="ic">📒</span>仕訳帳</button>
+  <button class="nav-btn" onclick="goTab('declaration')"><span class="ic">📋</span>申告書</button>
+  <button class="nav-btn" onclick="goTab('subsidy')"><span class="ic">💰</span>補助金</button>
+  <button class="nav-btn" onclick="goTab('consumption')"><span class="ic">🧾</span>消費税</button>
+  <button class="nav-btn" onclick="goTab('ai-chat')"><span class="ic">🤖</span>AI税理士</button>
+</nav>
+
+<main class="main" id="appMain" style="display:none;">
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<section class="sec active" id="tab-dashboard">
+  <div class="stats-grid">
+    <div class="stat"><div class="stat-lbl">売上合計</div><div class="stat-val inc" id="s-inc">0<span class="stat-unit">円</span></div></div>
+    <div class="stat"><div class="stat-lbl">経費合計</div><div class="stat-val exp" id="s-exp">0<span class="stat-unit">円</span></div></div>
+    <div class="stat"><div class="stat-lbl">課税所得（概算）</div><div class="stat-val tax" id="s-tax">0<span class="stat-unit">円</span></div></div>
+    <div class="stat"><div class="stat-lbl">仕訳件数</div><div class="stat-val cnt" id="s-cnt">0<span class="stat-unit">件</span></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">📈 申告進捗</div>
+    <div class="prog-wrap">
+      <div class="prog-hd"><span>レシート収集</span><span id="p1v">0%</span></div>
+      <div class="prog-bar"><div class="prog-fill blue" id="p1" style="width:0%"></div></div>
+    </div>
+    <br>
+    <div class="prog-wrap">
+      <div class="prog-hd"><span>仕訳入力</span><span id="p2v">0%</span></div>
+      <div class="prog-bar"><div class="prog-fill green" id="p2" style="width:0%"></div></div>
+    </div>
+    <br>
+    <div class="prog-wrap">
+      <div class="prog-hd"><span>申告書作成</span><span id="p3v">0%</span></div>
+      <div class="prog-bar"><div class="prog-fill orange" id="p3" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">🕐 最近の仕訳</div>
+    <div id="recent-list"><div class="empty"><div class="ei">📝</div><p>まだ仕訳がありません<br>レシートタブから始めましょう</p></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">🔥 接続状態</div>
+    <div class="info-conn">
+      <b>✅ Firebase Functions 接続済み</b><br>
+      Project: kensetsu-nippo-842a2 / Endpoint: /askClaude<br>
+      Model: gemini-2.5-flash / Google Search: URLコンテキスト対応<br>
+      Access Key: HH-2026-kensetsu-daiku
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ RECEIPT ══════════ -->
+<section class="sec" id="tab-receipt">
+  <div class="alert info">📸 レシート・領収書を撮影するとGemini AIが自動で内容を解析・仕訳分類します</div>
+
+  <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-in').click()"
+       ondragover="e.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+       ondrop="this.classList.remove('drag');handleDrop(event)">
+    <div class="upload-icon">📄</div>
+    <div class="upload-text"><strong>タップして撮影 / 画像を選択</strong><br>またはファイルをドロップ<br><small>JPG・PNG対応</small></div>
+  </div>
+  <input type="file" id="file-in" accept="image/*" capture="environment" onchange="handleFile(event)" style="display:none">
+
+  <div id="preview-box" style="display:none;margin-bottom:12px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);position:relative;">
+    <img id="preview-img" src="" style="width:100%;max-height:280px;object-fit:contain;background:#000;">
+    <div id="scan-overlay" style="display:none;position:absolute;inset:0;background:rgba(10,22,40,.75);align-items:center;justify-content:center;flex-direction:column;gap:10px;">
+      <div style="color:#7FE4A0;font-size:13px;font-weight:600;">⚙️ Gemini AI解析中...</div>
+      <div style="width:180px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;"><div style="height:100%;background:#7FE4A0;border-radius:2px;animation:scanA 1.5s ease-in-out infinite;"></div></div>
+    </div>
+  </div>
+  <style>@keyframes scanA{0%{width:0%}50%{width:65%}100%{width:100%}}</style>
+
+  <div class="result-card" id="result-card">
+    <div class="result-stamp">✓ AI解析完了</div>
+    <div style="float:right;font-size:11px;color:var(--text3);">信頼度: <span id="ai-conf" style="color:var(--green);">--</span></div>
+    <div style="clear:both;height:4px;"></div>
+    <div class="result-grid" id="result-grid"></div>
+    <div style="display:flex;gap:8px;margin-top:13px;">
+      <button class="btn-primary" style="margin-top:0;" onclick="saveJournal()">✅ 仕訳に保存</button>
+      <button class="btn-outline" style="flex:0 0 auto;padding:10px 16px;" onclick="resetReceipt()">🔄 再撮影</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">✏️ 手動入力</div>
+    <div class="frow"><div class="flbl">日付</div><input type="date" class="finput" id="m-date"></div>
+    <div class="frow"><div class="flbl">店舗・取引先</div><input type="text" class="finput" id="m-name" placeholder="例）セブンイレブン"></div>
+    <div class="frow"><div class="flbl">金額（税込）</div><input type="number" class="finput" id="m-amount" placeholder="3300"></div>
+    <div class="frow"><div class="flbl">勘定科目</div>
+      <select class="finput" id="m-cat">
+        <option value="">選択</option>
+        <optgroup label="収益"><option>売上高</option><option>受取利息</option></optgroup>
+        <optgroup label="費用">
+          <option>旅費交通費</option><option>交際費</option><option>消耗品費</option>
+          <option>通信費</option><option>地代家賃</option><option>水道光熱費</option>
+          <option>広告宣伝費</option><option>外注費</option><option>給料手当</option>
+          <option>修繕費</option><option>雑費</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="flbl">インボイス番号（任意） <span onclick="manualCheckInvoice()" style="cursor:pointer;color:var(--blue);font-weight:700;">🔍 照合する</span></div>
+      <input type="text" class="finput" id="m-inv" placeholder="T1234567890123">
+      <div id="invoice-check-result" style="display:none;margin-top:6px;font-size:12px;"></div>
+    </div>
+    <button class="btn-primary" onclick="saveManual()">💾 手動で保存</button>
+  </div>
+</section>
+
+<!-- ══════════ JOURNAL ══════════ -->
+<section class="sec" id="tab-journal">
+  <div class="filter-row">
+    <button class="fbtn active" onclick="filterJ('all',this)">すべて</button>
+    <button class="fbtn" onclick="filterJ('income',this)">収益</button>
+    <button class="fbtn" onclick="filterJ('expense',this)">費用</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="overflow-x:auto;">
+      <table class="jtbl">
+        <thead><tr><th>日付</th><th>摘要</th><th>勘定科目</th><th>金額</th><th>税区分</th></tr></thead>
+        <tbody id="j-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <div style="font-size:11px;text-align:center;margin:6px 0 10px;"><span id="sync-badge" style="color:var(--text3);">💾 ローカル保存</span></div>
+  <button class="btn-outline" style="width:100%;" onclick="exportCSV()">📥 CSVエクスポート</button>
+</section>
+
+<!-- ══════════ DECLARATION v2 ══════════ -->
+<section class="sec" id="tab-declaration">
+
+  <!-- STEP1: 申告者区分 -->
+  <div class="card">
+    <div class="card-hd">STEP 1 ｜ 申告者区分を選択</div>
+    <div class="type-grid" id="entity-grid">
+      <div class="type-card sel" onclick="selectEntity('sole',this)">
+        <div class="tc-icon">👤</div>
+        <div class="tc-name">個人事業主</div>
+        <div class="tc-sub">フリーランス・大工・工務店（個人）</div>
+        <div class="tc-badge std">所得税申告</div>
+      </div>
+      <div class="type-card" onclick="selectEntity('corp',this)">
+        <div class="tc-icon">🏢</div>
+        <div class="tc-name">法人</div>
+        <div class="tc-sub">株式会社・合同会社・工務店（法人）</div>
+        <div class="tc-badge std">法人税申告</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP2: 申告方式（個人のみ） -->
+  <div class="card" id="method-card">
+    <div class="card-hd">STEP 2 ｜ 申告方式を選択</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div class="type-card" onclick="selectMethod('white',this)" id="m-white">
+        <div class="tc-icon">📄</div>
+        <div class="tc-name">白色申告</div>
+        <div class="tc-sub">簡易帳簿OK<br>控除なし</div>
+        <div class="tc-badge std">控除0円</div>
+      </div>
+      <div class="type-card" onclick="selectMethod('blue10',this)" id="m-blue10">
+        <div class="tc-icon">📘</div>
+        <div class="tc-name">青色10万</div>
+        <div class="tc-sub">簡易簿記<br>帳簿保存必須</div>
+        <div class="tc-badge std">控除10万円</div>
+      </div>
+      <div class="type-card sel" onclick="selectMethod('blue65',this)" id="m-blue65">
+        <div class="tc-icon">🥇</div>
+        <div class="tc-name">青色65万</div>
+        <div class="tc-sub">複式簿記<br>e-Tax必須</div>
+        <div class="tc-badge best">★ 最大節税</div>
+      </div>
+    </div>
+    <div class="alert success" id="method-desc" style="margin-top:10px;font-size:11px;">
+      🥇 青色65万円控除（推奨）：e-Taxで電子申告すると65万円が所得から控除。複式簿記の帳簿が必要ですが、ZEIMU-AIの仕訳帳がそのまま使えます。赤字は3年間繰り越し可能。
+    </div>
+  </div>
+
+  <!-- STEP3: 税額計算 -->
+  <div class="card">
+    <div class="card-hd">STEP 3 ｜ 税額概算計算</div>
+
+    <!-- 個人事業主用 -->
+    <div id="d-sole">
+      <div class="frow"><div class="flbl">売上（収入）合計 <span>仕訳帳から自動引用</span></div><input type="number" class="finput" id="s-sales" placeholder="8000000" oninput="calcSole()"></div>
+      <div class="frow"><div class="flbl">必要経費合計</div><input type="number" class="finput" id="s-exp" placeholder="2500000" oninput="calcSole()"></div>
+      <div class="frow"><div class="flbl">青色申告特別控除 <span id="ao-note">e-Tax申告で65万円</span></div>
+        <select class="finput" id="s-ao" oninput="calcSole()">
+          <option value="650000">65万円（e-Tax・複式簿記）★推奨</option>
+          <option value="550000">55万円（書面・複式簿記）</option>
+          <option value="100000">10万円（簡易帳簿）</option>
+          <option value="0">0円（白色申告）</option>
+        </select>
+      </div>
+      <div class="frow"><div class="flbl">社会保険料控除</div><input type="number" class="finput" id="s-soc" placeholder="400000" oninput="calcSole()"></div>
+      <div class="frow"><div class="flbl">配偶者控除</div><input type="number" class="finput" id="s-spouse" placeholder="0" oninput="calcSole()"></div>
+      <div class="frow"><div class="flbl">扶養控除（人数×38万円）</div><input type="number" class="finput" id="s-dep2" placeholder="0" oninput="calcSole()"></div>
+      <div class="frow"><div class="flbl">基礎控除</div><input type="number" class="finput" id="s-bas" value="480000" oninput="calcSole()"></div>
+      <div class="frow"><div class="flbl">専従者給与（青色のみ）</div><input type="number" class="finput" id="s-senj" placeholder="0" oninput="calcSole()"></div>
+      <div class="calc-result" id="sr" style="display:none">
+        <div class="crow"><span>収入合計</span><span id="sr-s">--</span></div>
+        <div class="crow deduct"><span>　必要経費</span><span id="sr-e">--</span></div>
+        <div class="crow deduct" id="sr-senj-row"><span>　専従者給与</span><span id="sr-senj">--</span></div>
+        <div class="crow"><span>事業所得</span><span id="sr-j">--</span></div>
+        <div class="crow deduct"><span>　青色特別控除</span><span id="sr-ao">--</span></div>
+        <div class="crow deduct"><span>　社会保険料控除</span><span id="sr-so">--</span></div>
+        <div class="crow deduct" id="sr-sp-row"><span>　配偶者控除</span><span id="sr-sp">--</span></div>
+        <div class="crow deduct" id="sr-dep2-row"><span>　扶養控除</span><span id="sr-dep2">--</span></div>
+        <div class="crow deduct"><span>　基礎控除</span><span id="sr-ba">--</span></div>
+        <div class="crow"><span>課税所得</span><span id="sr-ti">--</span></div>
+        <div class="crow taxrow"><span>所得税</span><span id="sr-t">--</span></div>
+        <div class="crow taxrow"><span>復興特別所得税（2.1%）</span><span id="sr-f">--</span></div>
+        <div class="crow total"><span>納税総額（概算）</span><span id="sr-tot">--</span></div>
+        <div class="crow" style="background:var(--green-dim);border-radius:6px;padding:8px;margin-top:6px;font-size:11px;color:var(--green);border-bottom:none;">
+          <span>💡 白色申告比の節税効果</span><span id="sr-benefit">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 法人用 -->
+    <div id="d-corp" style="display:none">
+      <div class="frow"><div class="flbl">売上高 <span>仕訳帳から自動引用</span></div><input type="number" class="finput" id="c-sales" placeholder="10000000" oninput="calcCorp()"></div>
+      <div class="frow"><div class="flbl">経費合計</div><input type="number" class="finput" id="c-exp" placeholder="3000000" oninput="calcCorp()"></div>
+      <div class="frow"><div class="flbl">役員報酬</div><input type="number" class="finput" id="c-sal" placeholder="2400000" oninput="calcCorp()"></div>
+      <div class="frow"><div class="flbl">減価償却費</div><input type="number" class="finput" id="c-dep" placeholder="500000" oninput="calcCorp()"></div>
+      <div class="frow"><div class="flbl">交際費（損金算入限度額計算用）</div><input type="number" class="finput" id="c-ent" placeholder="0" oninput="calcCorp()"></div>
+      <div class="calc-result" id="cr" style="display:none">
+        <div class="crow"><span>売上高</span><span id="cr-s">--</span></div>
+        <div class="crow deduct"><span>　経費合計</span><span id="cr-e">--</span></div>
+        <div class="crow deduct"><span>　役員報酬</span><span id="cr-sal2">--</span></div>
+        <div class="crow deduct"><span>　減価償却費</span><span id="cr-d">--</span></div>
+        <div class="crow deduct" id="cr-ent-row"><span>　交際費損金算入額</span><span id="cr-ent">--</span></div>
+        <div class="crow"><span>課税所得</span><span id="cr-ti">--</span></div>
+        <div class="crow taxrow"><span>法人税（中小15% / 大23.4%）</span><span id="cr-t">--</span></div>
+        <div class="crow taxrow"><span>法人住民税（概算）</span><span id="cr-ct">--</span></div>
+        <div class="crow taxrow"><span>法人事業税（概算）</span><span id="cr-bt">--</span></div>
+        <div class="crow total"><span>納税総額（概算）</span><span id="cr-tot">--</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn-primary" style="margin-top:0;flex:1;" onclick="askDeclAI()">🤖 AI節税アドバイス</button>
+      <button class="btn-primary" style="margin-top:0;flex:1;background:linear-gradient(135deg,#16A05B,#0a5c34);" onclick="syncDeclFromJ()">📥 仕訳帳から自動取得</button>
+    </div>
+  </div>
+
+  <!-- STEP4: 必要書類チェックリスト -->
+  <div class="card" id="docs-card">
+    <div class="card-hd">STEP 4 ｜ 必要書類チェックリスト</div>
+    <div class="docs-list" id="docs-list"></div>
+  </div>
+
+  <!-- STEP5: e-Tax申告手順 -->
+  <div class="card">
+    <div class="card-hd">STEP 5 ｜ e-Tax 申告手順</div>
+    <div class="etax-flow" id="etax-flow"></div>
+  </div>
+
+  <!-- STEP6: データ出力 -->
+  <div class="card">
+    <div class="card-hd">STEP 6 ｜ 申告データ出力</div>
+    <div class="alert info" style="font-size:11px;margin-bottom:10px;">仕訳帳データを各形式で出力してe-Taxソフトに読み込めます</div>
+    <div class="output-btns">
+      <button class="out-btn pdf" onclick="outputPDF()">📄 申告書サマリーPDF</button>
+      <button class="out-btn csv" onclick="exportCSV()">📊 仕訳帳CSV（弥生互換）</button>
+      <button class="out-btn xml" onclick="outputXML()">🗂 e-Tax連携XML</button>
+      <button class="out-btn copy" onclick="outputCopy()">📋 e-Tax入力用データコピー</button>
+    </div>
+  </div>
+
+  <!-- 申告方式比較表 -->
+  <div class="card">
+    <div class="card-hd">📊 申告方式 完全比較表</div>
+    <div style="overflow-x:auto;">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>白色申告</th>
+            <th>青色10万</th>
+            <th class="ct-best">青色65万 ★</th>
+            <th>法人</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>特別控除</td><td class="ct-no">なし</td><td>10万円</td><td class="ct-best">65万円</td><td>－</td></tr>
+          <tr><td>赤字繰越</td><td class="ct-no">❌</td><td class="ct-no">❌</td><td class="ct-yes">✅ 3年</td><td class="ct-yes">✅ 10年</td></tr>
+          <tr><td>専従者給与</td><td>上限あり</td><td class="ct-yes">上限なし</td><td class="ct-yes">上限なし</td><td class="ct-yes">役員報酬</td></tr>
+          <tr><td>帳簿</td><td>簡易</td><td>簡易簿記</td><td>複式簿記</td><td>複式簿記</td></tr>
+          <tr><td>e-Tax</td><td>任意</td><td>任意</td><td class="ct-yes">必須</td><td class="ct-yes">必須</td></tr>
+          <tr><td>交際費</td><td>全額OK</td><td>全額OK</td><td>全額OK</td><td>800万or50%</td></tr>
+          <tr><td>退職金</td><td class="ct-no">❌</td><td class="ct-no">❌</td><td class="ct-no">❌</td><td class="ct-yes">✅ 役員退職金</td></tr>
+          <tr><td>建設業推奨</td><td class="ct-no">△</td><td>○</td><td class="ct-best">◎ 最推奨</td><td class="ct-yes">◎</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">📅 申告期限</div>
+    <div class="r-item"><div class="r-ic e">⚠️</div><div class="r-info"><div class="r-name">法人税・消費税申告</div><div class="r-date">決算日から2ヶ月以内</div></div></div>
+    <div class="r-item"><div class="r-ic i">📅</div><div class="r-info"><div class="r-name">所得税確定申告</div><div class="r-date">翌年2/16〜3/15（e-Tax推奨）</div></div></div>
+    <div class="r-item"><div class="r-ic i">📅</div><div class="r-info"><div class="r-name">消費税確定申告（個人）</div><div class="r-date">翌年1/1〜3/31</div></div></div>
+    <div class="r-item"><div class="r-ic i">📅</div><div class="r-info"><div class="r-name">青色申告承認申請書</div><div class="r-date">開業から2ヶ月以内 or 前年12/15まで</div></div></div>
+  </div>
+</section>
+
+
+<!-- ══════════ CONSUMPTION TAX ══════════ -->
+<section class="sec" id="tab-consumption">
+  <div class="card" style="background:linear-gradient(135deg,#E07020,#a04010);color:#fff;border:none;padding:18px;margin-bottom:14px;">
+    <div style="font-size:16px;font-weight:800;margin-bottom:4px;">🧾 消費税 簡易課税計算</div>
+    <div style="font-size:11px;opacity:.9;line-height:1.5;">建設業は<strong>第3種事業（みなし仕入率70%）</strong><br>実際の仕入に関係なく売上の70%が控除対象</div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">事業区分の確認</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div id="kind-1" class="kind-btn kind-active" onclick="selectKind(1,this)"><div class="kind-num">第1種</div><div class="kind-name">卸売業</div><div class="kind-rate">90%</div></div>
+      <div id="kind-2" class="kind-btn" onclick="selectKind(2,this)"><div class="kind-num">第2種</div><div class="kind-name">小売業</div><div class="kind-rate">80%</div></div>
+      <div id="kind-3" class="kind-btn kind-sel" onclick="selectKind(3,this)"><div class="kind-num">第3種</div><div class="kind-name">建設業・製造業 ★</div><div class="kind-rate">70%</div></div>
+      <div id="kind-4" class="kind-btn" onclick="selectKind(4,this)"><div class="kind-num">第4種</div><div class="kind-name">飲食業・その他</div><div class="kind-rate">60%</div></div>
+      <div id="kind-5" class="kind-btn" onclick="selectKind(5,this)"><div class="kind-num">第5種</div><div class="kind-name">サービス業・金融</div><div class="kind-rate">50%</div></div>
+      <div id="kind-6" class="kind-btn" onclick="selectKind(6,this)"><div class="kind-num">第6種</div><div class="kind-name">不動産業</div><div class="kind-rate">40%</div></div>
+    </div>
+    <div class="alert info" id="kind-desc">🔨 建設業（第3種）：みなし仕入率70%。土木工事・大工・電気工事・管工事・内装仕上げ等が該当。材料を自己調達して加工するケースが対象。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">消費税額 計算</div>
+    <div class="frow">
+      <div class="flbl">課税期間の売上高（税抜） <span>仕訳帳から自動引用可</span></div>
+      <input type="number" class="finput" id="ct-sales" placeholder="例）10000000" oninput="calcConsumption()">
+    </div>
+    <div class="frow">
+      <div class="flbl">消費税率</div>
+      <select class="finput" id="ct-rate" oninput="calcConsumption()">
+        <option value="0.10">10%（標準税率）</option>
+        <option value="0.08">8%（軽減税率）</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="flbl">課税方式</div>
+      <select class="finput" id="ct-method" oninput="calcConsumption()">
+        <option value="simple">簡易課税（みなし仕入）</option>
+        <option value="actual">本則課税（実際仕入）</option>
+      </select>
+    </div>
+    <div id="ct-actual-wrap" style="display:none">
+      <div class="frow">
+        <div class="flbl">実際の仕入・経費（税抜）</div>
+        <input type="number" class="finput" id="ct-actual-exp" placeholder="例）6000000" oninput="calcConsumption()">
+      </div>
+    </div>
+
+    <div class="calc-result" id="ct-result" style="display:none;">
+      <div class="crow"><span>課税売上高（税抜）</span><span id="ctr-sales">--</span></div>
+      <div class="crow taxrow"><span>売上消費税額</span><span id="ctr-tax-collect">--</span></div>
+      <div class="crow deduct" id="ctr-row-simple"><span>　みなし仕入税額（<span id="ctr-rate-pct">70</span>%）</span><span id="ctr-deduct">--</span></div>
+      <div class="crow deduct" id="ctr-row-actual" style="display:none"><span>　仕入控除税額（実際）</span><span id="ctr-actual-deduct">--</span></div>
+      <div class="crow total"><span>納付消費税額</span><span id="ctr-pay">--</span></div>
+      <div class="crow" style="background:var(--green-dim);border-radius:6px;padding:8px;margin-top:6px;font-size:11px;color:var(--green);border-bottom:none;" id="ctr-benefit-row">
+        <span>💡 簡易課税の節税効果</span><span id="ctr-benefit">--</span>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="syncConsumptionFromJ()">📥 仕訳帳から売上を自動取得</button>
+    <button class="btn-primary" style="background:linear-gradient(135deg,#16A05B,#0d7a45);margin-top:8px;" onclick="askConsumptionAI()">🤖 AI税理士に消費税アドバイスを求める</button>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">📅 消費税申告期限</div>
+    <div class="r-item"><div class="r-ic i">📅</div><div class="r-info"><div class="r-name">個人事業主 消費税確定申告</div><div class="r-date">翌年1月1日〜3月31日</div></div></div>
+    <div class="r-item"><div class="r-ic e">⚠️</div><div class="r-info"><div class="r-name">法人 消費税申告</div><div class="r-date">事業年度終了後2ヶ月以内</div></div></div>
+    <div class="r-item"><div class="r-ic i">📅</div><div class="r-info"><div class="r-name">簡易課税選択届出書</div><div class="r-date">適用課税期間の前日まで</div></div></div>
+    <div class="alert warn" style="margin-top:10px;">⚠️ 簡易課税は2年間継続適用が必要。基準期間の課税売上高が5,000万円以下の事業者のみ選択可。</div>
+  </div>
+</section>
+
+<!-- ══════════ SUBSIDY ══════════ -->
+<section class="sec" id="tab-subsidy">
+  <div class="sub-hero">
+    <h2>💰 補助金・節税 AIリアルタイム検索</h2>
+    <p>Gemini 2.5 Flash × Google検索 × URLコンテキストで<br>国税庁・経産省・jGrantsの最新情報を直接解析</p>
+  </div>
+
+  <!-- 検索ソース表示 -->
+  <div class="search-sources">
+    <div class="src-badge active"><span class="src-dot"></span>Google Search</div>
+    <div class="src-badge active"><span class="src-dot"></span>URLコンテキスト</div>
+    <div class="src-badge active"><span class="src-dot"></span>国税庁</div>
+    <div class="src-badge active"><span class="src-dot"></span>経産省・jGrants</div>
+    <div class="src-badge active"><span class="src-dot"></span>中小機構</div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">🎯 事業情報を入力</div>
+
+    <div class="chip-lbl">業種・職種</div>
+    <div class="chip-group" id="cg-industry">
+      <button class="chip sel" data-v="建設業・大工・工務店">🔨 建設業・大工</button>
+      <button class="chip" data-v="製造業">🏭 製造業</button>
+      <button class="chip" data-v="飲食業">🍽 飲食業</button>
+      <button class="chip" data-v="小売業">🛒 小売業</button>
+      <button class="chip" data-v="IT・情報通信">💻 IT・情報通信</button>
+      <button class="chip" data-v="サービス業">🤝 サービス業</button>
+      <button class="chip" data-v="農業・林業">🌾 農業・林業</button>
+    </div>
+
+    <div class="chip-lbl">事業規模</div>
+    <div class="chip-group" id="cg-scale">
+      <button class="chip sel" data-v="個人事業主・フリーランス">👤 個人事業主</button>
+      <button class="chip" data-v="小規模法人（従業員20人以下）">🏢 小規模法人</button>
+      <button class="chip" data-v="中小企業（資本金1億円以下）">🏗 中小企業</button>
+      <button class="chip" data-v="中堅企業（売上10億以上）">🏙 中堅企業</button>
+    </div>
+
+    <div class="chip-lbl">課題・ニーズ（複数可）</div>
+    <div class="chip-group" id="cg-needs">
+      <button class="chip" data-v="設備投資・機械購入">⚙️ 設備投資</button>
+      <button class="chip" data-v="デジタル化・DX・IT導入">📱 DX・IT導入</button>
+      <button class="chip" data-v="人材採用・技能訓練">👥 人材育成</button>
+      <button class="chip" data-v="省エネ・脱炭素・GX">🌱 省エネ・GX</button>
+      <button class="chip" data-v="販路開拓・EC・海外展開">🌐 販路開拓</button>
+      <button class="chip sel" data-v="節税・税負担軽減・控除活用">💴 節税・控除</button>
+      <button class="chip" data-v="事業承継・M&A">🤝 事業承継</button>
+      <button class="chip" data-v="創業・スタートアップ支援">🚀 創業支援</button>
+      <button class="chip" data-v="資金調達・融資">🏦 資金調達</button>
+    </div>
+
+    <div class="chip-lbl">都道府県</div>
+    <select class="finput" id="pref-sel" style="margin-bottom:14px;">
+      <option value="全国（都道府県共通）">全国（共通）</option>
+      <option value="大阪府">大阪府</option>
+      <option value="東京都">東京都</option>
+      <option value="愛知県">愛知県</option>
+      <option value="神奈川県">神奈川県</option>
+      <option value="福岡県">福岡県</option>
+      <option value="北海道">北海道</option>
+      <option value="京都府">京都府</option>
+      <option value="兵庫県">兵庫県</option>
+      <option value="埼玉県">埼玉県</option>
+      <option value="千葉県">千葉県</option>
+      <option value="その他">その他</option>
+    </select>
+
+    <button class="search-btn" id="sub-search-btn" onclick="searchSubsidy()">
+      🔍 Google検索 × URLコンテキストで補助金・節税を検索
+    </button>
+  </div>
+
+  <div class="searching-box" id="sub-searching">
+    <div class="spin"></div>
+    <div>
+      <div id="sub-search-msg">Gemini 2.5 Flashが検索中...</div>
+      <div class="search-step" id="sub-search-step">国税庁・経産省・jGrantsの最新情報を解析しています</div>
+    </div>
+  </div>
+
+  <div id="sub-results"></div>
+</section>
+
+<!-- ══════════ AI CHAT ══════════ -->
+<section class="sec" id="tab-ai-chat">
+
+  <div class="quick-qs" id="quick-qs">
+    <button class="qq" onclick="qqAsk('交際費の損金算入限度額（法人）を教えて')">交際費の限度額</button>
+    <button class="qq" onclick="qqAsk('インボイス制度の適格請求書の必須記載事項を教えて')">インボイス要件</button>
+    <button class="qq" onclick="qqAsk('青色申告65万円控除の要件と手続きを詳しく教えて')">青色申告65万控除</button>
+    <button class="qq" onclick="qqAsk('小規模企業共済の節税効果と掛金の仕組みを教えて')">小規模企業共済</button>
+    <button class="qq" onclick="qqAsk('建設業で経費にできるものできないものを一覧で教えて')">建設業の経費</button>
+    <button class="qq" onclick="qqAsk('消費税の簡易課税制度の第3種事業（建設業）の仕組みを教えて')">簡易課税・3種</button>
+    <button class="qq" onclick="qqAsk('2025年最新の節税策トップ5を教えて（法人・個人事業主向け）')">最新節税トップ5</button>
+    <button class="qq" onclick="qqAsk('ものづくり補助金2025年の最新公募状況と申請のコツを教えて')">ものづくり補助金</button>
+  </div>
+
+  <div class="chat-wrap">
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="msg ai">
+        <div class="msg-av ai">税</div>
+        <div>
+          <div class="msg-bub">
+            こんにちは！AI税理士 <strong>ZEIMU-AI</strong> です。<br>
+            <span class="url-ctx-badge">🌐 URLコンテキスト対応</span><br><br>
+            国税庁・経産省・jGrantsの最新情報をリアルタイムで参照しながら回答します。<br><br>
+            📌 <strong>対応領域</strong><br>
+            • 法人税・所得税・消費税・インボイス<br>
+            • 補助金・助成金の申請アドバイス<br>
+            • 節税策・経費判断<br>
+            • 確定申告の手順<br><br>
+            ※ 最終判断は税理士・専門家にご確認ください。
+          </div>
+          <div class="msg-time">ZEIMU-AI</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <textarea class="chat-ta" id="chat-in" placeholder="税務・補助金について質問..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+        oninput="autoH(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <div class="card-hd">🔥 Firebase 接続情報</div>
+    <div class="info-conn">
+      <b>✅ kensetsu-nippo-842a2 / askClaude 接続済み</b><br>
+      Model: gemini-2.5-flash &nbsp;|&nbsp; Google Search: ON<br>
+      URLコンテキスト: ON（国税庁・jGrants等）<br>
+      Access Key: HH-2026-kensetsu-daiku
+    </div>
+    <button onclick="toggleCode()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;padding:4px 0;font-weight:600;">📄 Functions共通コードを見る ▼</button>
+    <pre class="code-block" id="fn-code">// 既存のaskClaude Functionをそのまま使用
+// { prompt, model:'gemini-2.5-flash', useSearch:true }
+// useSearch:true → Google Search + URLコンテキスト グラウンディング ON
+// URLコンテキスト: Geminiが国税庁・jGrantsを直接参照して回答</pre>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ═══════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════
+var FUNCTIONS_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  ? 'http://localhost:5001/kensetsu-nippo-842a2/us-central1'
+  : 'https://us-central1-kensetsu-nippo-842a2.cloudfunctions.net';
+const ACCESS_KEY = 'HH-2026-kensetsu-daiku';
+
+// ── URLコンテキスト参照先（公式サイト）
+const TAX_URLS = [
+  'https://www.nta.go.jp',
+  'https://www.meti.go.jp/policy/economy/keiei_innovation/sangyokinyu/SMregyojo.html',
+  'https://jgrants.go.jp',
+  'https://www.smrj.go.jp',
+  'https://seisansei.smrj.go.jp'
+];
+
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+let journals = JSON.parse(localStorage.getItem('zeimu_j')||'[]');
+let currentImg = null;
+let chatHistory = [];
+let jFilter = 'all';
+let _subItems = []; // 補助金名キャッシュ
+
+// ═══════════════════════════════════
+// FIREBASE callAI（fukusho-v8と同方式）
+// ═══════════════════════════════════
+// ── callAI: fukusho-v8-11と完全同一方式
+async function callAI(prompt, useSearch=true, useUrl=false){
+  const body = {
+    prompt,
+    model:'gemini-2.5-flash',
+    useSearch: useUrl ? false : useSearch,
+    useUrl: useUrl
+  };
+  const r=await fetch(FUNCTIONS_BASE+'/askClaude',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Access-Key':ACCESS_KEY},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error('AI通信エラー: '+(e?.error?.message||r.status));}
+  const d=await r.json();
+  return d?.candidates?.[0]?.content?.parts?.[0]?.text||d?.text||d?.result||'応答なし';
+}
+
+// ── callAIWithUrl: URLコンテキスト専用（fukusho-v8-11と同一）
+async function callAIWithUrl(prompt, url){
+  const body = {
+    prompt: 'URL: '+url+'\n\n'+prompt,
+    model:'gemini-2.5-flash',
+    useSearch: false,
+    useUrl: true,
+    targetUrl: url
+  };
+  const r=await fetch(FUNCTIONS_BASE+'/askClaude',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Access-Key':ACCESS_KEY},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error('AI通信エラー: '+(e?.error?.message||r.status));}
+  const d=await r.json();
+  return d?.candidates?.[0]?.content?.parts?.[0]?.text||d?.text||d?.result||'応答なし';
+}
+
+// ── callVision: Gemini Vision 画像解析専用
+async function callVision(prompt, mimeType, base64Data){
+  const body = {
+    prompt,
+    model:'gemini-2.5-flash',
+    useSearch: false,
+    useUrl: false,
+    mediaContents:[{type: mimeType, base64: base64Data}]
+  };
+  const r=await fetch(FUNCTIONS_BASE+'/askClaude',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Access-Key':ACCESS_KEY},
+    body:JSON.stringify(body)
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error('Vision通信エラー: '+(e?.error?.message||r.status));}
+  const d=await r.json();
+  return d?.candidates?.[0]?.content?.parts?.[0]?.text||d?.text||d?.result||'応答なし';
+}
+
+// parseJ: 配列用（補助金結果等）
+function parseJ(txt){
+  if(!txt) return null;
+  try{
+    const c=txt.replace(/```json|```/g,'').trim();
+    const s=c.indexOf('['),e=c.lastIndexOf(']');
+    if(s===-1||e===-1) return null;
+    return JSON.parse(c.substring(s,e+1));
+  }catch(e){return null;}
+}
+
+// parseJO: オブジェクト用（レシート解析・インボイス等）— fukusho-v8-11のparseJSONと同一
+function parseJO(txt){
+  if(!txt) return null;
+  try{
+    const c=txt.replace(/```json|```/g,'').trim();
+    const s=c.indexOf('{'),e=c.lastIndexOf('}');
+    if(s===-1||e===-1) return null;
+    return JSON.parse(c.substring(s,e+1));
+  }catch(e){return null;}
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+// initApp: ログイン後にshowApp()から呼ぶ
+function initApp(){
+  const y=new Date().getFullYear();
+  const yb=document.getElementById('year-badge');
+  if(yb) yb.textContent=y+'年度';
+  const md=document.getElementById('m-date');
+  if(md) md.value=new Date().toISOString().split('T')[0];
+  updateDash(); renderJ();
+  syncDeclFromJ();
+  updateDocsList(); updateEtaxFlow();
+  initChips();
+}
+
+// ═══════════════════════════════════
+// TAB
+// ═══════════════════════════════════
+function goTab(id){
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{
+    const ids=['dashboard','receipt','journal','declaration','subsidy','consumption','ai-chat'];
+    b.classList.toggle('active',ids[i]===id);
+  });
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('tab-'+id);
+  if(el) el.classList.add('active');
+  if(id==='declaration'){syncDeclFromJ();updateDocsList();updateEtaxFlow();}
+  if(id==='consumption') syncConsumptionFromJ();
+}
+
+// ═══════════════════════════════════
+// RECEIPT
+// ═══════════════════════════════════
+function handleDrop(e){e.preventDefault();if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);}
+function handleFile(e){if(e.target.files[0])processFile(e.target.files[0]);}
+
+function processFile(file){
+  // ① MIMEタイプ正規化（HEIC→JPEG変換、未対応形式をJPEGに統一）
+  const supportedTypes = ['image/jpeg','image/jpg','image/png','image/webp','image/gif'];
+  const mimeRaw = file.type || 'image/jpeg';
+  const needsConvert = !supportedTypes.includes(mimeRaw); // HEICなど
+
+  if(needsConvert){
+    // Canvas経由でJPEGに変換
+    const blobUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      // ② 解像度を下げてbase64サイズを削減（長辺1200px以内）
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const url = canvas.toDataURL('image/jpeg', 0.82);
+      URL.revokeObjectURL(blobUrl);
+      document.getElementById('preview-box').style.display='block';
+      document.getElementById('preview-img').src=url;
+      document.getElementById('result-card').classList.remove('show');
+      currentImg={url, mime:'image/jpeg', b64:url.split(',')[1]};
+      analyzeReceipt();
+    };
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); toast('⚠️ 画像を読み込めませんでした','w'); };
+    img.src = blobUrl;
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    // ② 解像度リサイズ（長辺1200px以内・JPEG品質0.82）
+    const img2 = new Image();
+    img2.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 1200;
+      let w = img2.width, h = img2.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img2, 0, 0, w, h);
+      const resized = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('preview-box').style.display='block';
+      document.getElementById('preview-img').src=resized;
+      document.getElementById('result-card').classList.remove('show');
+      currentImg={url:resized, mime:'image/jpeg', b64:resized.split(',')[1]};
+      analyzeReceipt();
+    };
+    img2.src = url;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeReceipt(){
+  const ov=document.getElementById('scan-overlay');
+  ov.style.display='flex';
+  // ★ Gemini Vision: 画像を直接送信して本物のOCR解析
+  const visionPrompt='この画像はレシートまたは領収書です。画像を正確に読み取り、以下のJSON形式のみで返答してください（マークダウン・前置き不要）:\n'
+    +'{"date":"YYYY-MM-DD","store":"店舗・会社名","amount":税込合計金額数値,"tax":消費税額数値,"category":"勘定科目（旅費交通費/交際費/消耗品費/通信費/地代家賃/水道光熱費/広告宣伝費/外注費/給料手当/修繕費/売上高/雑費）","taxType":"課税or非課税or免税","invoiceNo":"T+13桁またはなければ空文字","confidence":"高or中or低","memo":"特記事項があれば"}\n'
+    +'【解析ルール】\n- 建設業・大工・工務店の経費として最適な勘定科目を選ぶ\n- 金額は税込合計を読み取る\n- インボイス登録番号（T+13桁）が記載されていれば必ず抽出\n- 日付が不明な場合は今日の日付を使用\n- 読み取れない部分は空文字または0にする';
+  // ③ リトライ付き（最大2回）
+  let lastErr = null;
+  for(let attempt = 1; attempt <= 2; attempt++){
+    try{
+      if(attempt === 2){
+        // 2回目: さらに圧縮して再送
+        const canvas2 = document.createElement('canvas');
+        const img3 = new Image();
+        await new Promise(res => { img3.onload = res; img3.src = currentImg.url; });
+        const S = 800;
+        let w2=img3.width, h2=img3.height;
+        if(w2>S||h2>S){ if(w2>h2){h2=Math.round(h2*S/w2);w2=S;}else{w2=Math.round(w2*S/h2);h2=S;} }
+        canvas2.width=w2; canvas2.height=h2;
+        canvas2.getContext('2d').drawImage(img3,0,0,w2,h2);
+        const small = canvas2.toDataURL('image/jpeg', 0.7);
+        currentImg.b64 = small.split(',')[1];
+        currentImg.mime = 'image/jpeg';
+      }
+      const txt=await callVision(visionPrompt, currentImg.mime, currentImg.b64);
+      const parsed=parseJO(txt);
+      if(!parsed) throw new Error('JSON parse fail: '+txt.substring(0,80));
+      ov.style.display='none';
+      showResult(parsed);
+      if(parsed.invoiceNo && parsed.invoiceNo.startsWith('T')){
+        setTimeout(()=>checkInvoiceNo(parsed.invoiceNo), 500);
+      }
+      return; // 成功
+    }catch(err){
+      lastErr = err;
+      if(attempt === 1) await new Promise(r=>setTimeout(r, 1200)); // 1.2秒待ってリトライ
+    }
+  }
+  // 2回とも失敗
+  ov.style.display='none';
+  toast('⚠️ 解析に失敗しました。手動入力してください','w');
+  showResult({date:new Date().toISOString().split('T')[0],store:'解析失敗',amount:0,tax:0,category:'雑費',taxType:'課税',invoiceNo:'',confidence:'低',memo:'エラー: '+lastErr.message});
+}
+
+function showResult(d){
+  currentImg.parsed=d;
+  const conf=d.confidence||'-';
+  document.getElementById('ai-conf').textContent=conf;
+  document.getElementById('ai-conf').style.color=conf==='高'?'var(--green)':conf==='中'?'var(--orange)':'var(--red)';
+  const _i2=d.invoiceNo?'<div class="rk">インボイス</div><div class="rv" style="font-family:monospace;font-size:11px">'+d.invoiceNo+'</div>':'';
+  const _m2=d.memo?'<div class="rk">備考</div><div class="rv" style="color:var(--text3);font-size:11px">'+d.memo+'</div>':'';
+  document.getElementById('result-grid').innerHTML=
+    '<div class="rk">日付</div><div class="rv">'+(d.date||'-')+'</div>'
+    +'<div class="rk">店舗名</div><div class="rv">'+(d.store||'-')+'</div>'
+    +'<div class="rk">金額（税込）</div><div class="rv big">¥'+Number(d.amount||0).toLocaleString()+'</div>'
+    +'<div class="rk">消費税</div><div class="rv">¥'+Number(d.tax||0).toLocaleString()+'</div>'
+    +'<div class="rk">勘定科目</div><div class="rv"><span class="rv tag">'+(d.category||'雑費')+'</span></div>'
+    +'<div class="rk">課税区分</div><div class="rv">'+(d.taxType||'課税')+'</div>'
+    +_i2+_m2;
+}
+
+function saveJournal(){
+  if(!currentImg?.parsed) return;
+  const d=currentImg.parsed;
+  const isIncome=['売上高','受取利息'].includes(d.category);
+  addJ({date:d.date,store:d.store,amount:Number(d.amount),tax:Number(d.tax||0),category:d.category,taxType:d.taxType,invoiceNo:d.invoiceNo||'',type:isIncome?'income':'expense'});
+  toast('✅ 仕訳に保存しました');
+  resetReceipt();
+}
+
+function saveManual(){
+  const date=document.getElementById('m-date').value;
+  const store=document.getElementById('m-name').value;
+  const amount=Number(document.getElementById('m-amount').value);
+  const category=document.getElementById('m-cat').value;
+  const invoiceNo=document.getElementById('m-inv').value;
+  if(!date||!store||!amount||!category){toast('⚠️ 必須項目を入力してください','w');return;}
+  addJ({date,store,amount,tax:Math.round(amount*10/110),category,taxType:'課税',invoiceNo,type:['売上高','受取利息'].includes(category)?'income':'expense'});
+  document.getElementById('m-name').value='';
+  document.getElementById('m-amount').value='';
+  document.getElementById('m-inv').value='';
+  toast('✅ 手動入力を保存しました');
+}
+
+function addJ(e){e.id=Date.now();journals.unshift(e);localStorage.setItem('zeimu_j',JSON.stringify(journals));updateDash();renderJ();}
+
+function resetReceipt(){
+  document.getElementById('preview-box').style.display='none';
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('file-in').value='';
+  currentImg=null;
+}
+
+// ═══════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════
+function updateDash(){
+  const inc=journals.filter(j=>j.type==='income').reduce((s,j)=>s+j.amount,0);
+  const exp=journals.filter(j=>j.type==='expense').reduce((s,j)=>s+j.amount,0);
+  const tax=Math.max(0,inc-exp);
+  document.getElementById('s-inc').innerHTML=inc.toLocaleString()+'<span class="stat-unit">円</span>';
+  document.getElementById('s-exp').innerHTML=exp.toLocaleString()+'<span class="stat-unit">円</span>';
+  document.getElementById('s-tax').innerHTML=tax.toLocaleString()+'<span class="stat-unit">円</span>';
+  document.getElementById('s-cnt').innerHTML=journals.length+'<span class="stat-unit">件</span>';
+  const p1=Math.min(100,journals.length*5),p2=Math.min(100,journals.length*3);
+  ['p1','p2','p3'].forEach((id,i)=>{const v=[p1,p2,0][i];document.getElementById(id).style.width=v+'%';document.getElementById(id+'v').textContent=v+'%';});
+  const rec=journals.slice(0,5);
+  const el=document.getElementById('recent-list');
+  if(!rec.length){el.innerHTML='<div class="empty"><div class="ei">📝</div><p>まだ仕訳がありません</p></div>';return;}
+  el.innerHTML=rec.map(function(j){
+    const ic=j.type==='income'?'i':'e';
+    const ico=j.type==='income'?'💰':'🧾';
+    const sign=j.type==='income'?'+':'-';
+    return '<div class="r-item"><div class="r-ic '+ic+'">'+ico+'</div><div class="r-info"><div class="r-name">'+j.store+'</div><div class="r-date">'+j.date+' · '+j.category+'</div></div><div class="r-amt '+ic+'">'+sign+'¥'+j.amount.toLocaleString()+'</div></div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════
+// JOURNAL
+// ═══════════════════════════════════
+function filterJ(f,btn){jFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderJ();}
+function renderJ(){
+  const data=jFilter==='all'?journals:journals.filter(j=>j.type===(jFilter==='income'?'income':'expense'));
+  const tb=document.getElementById('j-body');
+  if(!data.length){tb.innerHTML='<tr><td colspan="5"><div class="empty"><div class="ei">📒</div><p>仕訳データなし</p></div></td></tr>';return;}
+  tb.innerHTML=data.map(function(j){
+    const ic=j.type==='income'?'i':'e';
+    const sign=j.type==='income'?'+':'-';
+    return '<tr><td style="white-space:nowrap;font-size:11px">'+j.date+'</td><td>'+j.store+'</td><td><span class="jtag '+ic+'">'+j.category+'</span></td><td class="'+(j.type==='income'?'jamt-i':'jamt-e')+'">'+sign+'¥'+j.amount.toLocaleString()+'</td><td style="font-size:10px;color:var(--text3)">'+(j.taxType||'課税')+'</td></tr>';
+  }).join('');
+}
+
+function exportCSV(){
+  const rows=[['日付','摘要','勘定科目','種別','金額','消費税','課税区分','インボイス番号']];
+  journals.forEach(j=>rows.push([j.date,j.store,j.category,j.type==='income'?'収益':'費用',j.amount,j.tax||0,j.taxType||'課税',j.invoiceNo||'']));
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='zeimu_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+}
+
+// ═══════════════════════════════════
+// DECLARATION
+// ═══════════════════════════════════
+// ══ DECLARATION v2 ══
+let currentEntity='sole'; // sole / corp
+let currentMethod='blue65'; // white / blue10 / blue65
+
+const methodLabels={white:'白色申告',blue10:'青色10万円控除',blue65:'青色65万円控除（e-Tax）'};
+const methodDescs={
+  white:'📄 白色申告：帳簿は簡易でOK。控除なし。建設業なら損です。すぐ青色申告に切り替えましょう。',
+  blue10:'📘 青色10万円控除：簡易簿記でOK。帳簿の保存が必要。10万円の所得控除が受けられます。',
+  blue65:'🥇 青色65万円控除（推奨）：e-Taxで電子申告すると65万円が所得から控除。複式簿記の帳簿が必要ですが、ZEIMU-AIの仕訳帳がそのまま使えます。赤字は3年間繰り越し可能。'
+};
+
+const docsData={
+  white_sole:['収支内訳書（一般用）|必須','所得税申告書B|必須','領収書・レシート（5年保存）|必須','現金出納帳|任意'],
+  blue10_sole:['青色申告決算書（損益計算書）|必須','所得税申告書B|必須','現金出納帳・経費帳|必須','領収書・レシート（7年保存）|必須','青色申告承認申請書（初回）|必須'],
+  blue65_sole:['青色申告決算書（損益計算書＋貸借対照表）|必須','所得税申告書B|必須','仕訳帳（複式簿記）|必須','領収書・レシート（7年保存）|必須','マイナンバーカード（e-Tax用）|必須','青色申告承認申請書（初回）|必須','小規模企業共済掛金証明書|任意','生命保険料控除証明書|任意'],
+  corp:['法人税申告書（別表一・別表二等）|必須','勘定科目内訳明細書|必須','決算書（損益計算書・貸借対照表）|必須','法人事業概況説明書|必須','消費税申告書（課税事業者）|必須','法人住民税申告書|必須','役員報酬議事録|必須','領収書・証憑書類（7年保存）|必須']
+};
+
+const etaxSteps={
+  white_sole:[
+    {t:'e-Taxソフト（Web版）にアクセス',d:'国税庁の確定申告書等作成コーナーを使用。マイナポータルとの連携で控除証明書が自動取得可能。',url:'https://www.keisan.nta.go.jp'},
+    {t:'収支内訳書を入力',d:'売上・経費を入力。ZEIMU-AIのCSVエクスポートデータを参照しながら入力。'},
+    {t:'所得税申告書Bに転記',d:'収支内訳書の数字が自動転記される。各種控除を入力。'},
+    {t:'マイナンバーカードで電子署名',d:'マイナンバーカードリーダーまたはスマートフォンのマイナポータルアプリで署名。'},
+    {t:'e-Tax送信',d:'送信完了後、受信通知を保存。還付の場合は約3週間で口座に入金。'}
+  ],
+  blue65_sole:[
+    {t:'青色申告承認申請書を提出（初年度）',d:'開業日から2ヶ月以内、または前年12/15までに税務署へ提出。一度承認されれば毎年継続。',url:'https://www.nta.go.jp/taxes/tetsuzuki/shinsei/annai/shinkoku/annai/09.htm'},
+    {t:'複式簿記で帳簿作成（通年）',d:'ZEIMU-AIの仕訳帳を活用。借方・貸方で記録。年末に貸借対照表・損益計算書を作成。'},
+    {t:'e-Taxソフト（Web版）で青色申告決算書を作成',d:'損益計算書と貸借対照表を入力。65万円控除の要件を自動チェック。',url:'https://www.keisan.nta.go.jp'},
+    {t:'所得税申告書Bに転記・各種控除入力',d:'小規模企業共済・生命保険・社会保険料等の控除証明書を手元に準備。'},
+    {t:'マイナンバーカードで電子署名・e-Tax送信',d:'65万円控除はe-Tax送信が必須条件。送信完了で控除が確定。'},
+    {t:'受信通知を保存・口座確認',d:'還付の場合は約3週間で口座に入金。法定申告期限の記録を保管。'}
+  ],
+  corp:[
+    {t:'決算作業（決算日後2ヶ月以内）',d:'損益計算書・貸借対照表を作成。ZEIMU-AIのCSVを会計ソフトに取り込み可能。'},
+    {t:'法人税申告書を作成',d:'別表一（税額計算）、別表二（同族会社判定）等を作成。税理士への依頼推奨。'},
+    {t:'e-Taxで法人申告',d:'法人向けe-Taxソフトを使用。電子証明書（法人用）が必要。',url:'https://www.e-tax.nta.go.jp/hojin/'},
+    {t:'地方税（法人住民税・事業税）を別途申告',d:'都道府県・市区町村のeLTAXで申告。e-Taxと連動して送信可能。',url:'https://www.eltax.lta.go.jp'},
+    {t:'消費税申告書を提出',d:'課税事業者は消費税申告書も必要。簡易課税の場合はZEIMU-AIの消費税タブを参照。'}
+  ]
+};
+
+function selectEntity(type, el){
+  currentEntity=type;
+  document.querySelectorAll('#entity-grid .type-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('method-card').style.display=type==='sole'?'block':'none';
+  document.getElementById('d-sole').style.display=type==='sole'?'block':'none';
+  document.getElementById('d-corp').style.display=type==='corp'?'block':'none';
+  if(type==='corp'){calcCorp();}else{calcSole();}
+  updateDocsList(); updateEtaxFlow();
+}
+
+function selectMethod(m, el){
+  currentMethod=m;
+  document.querySelectorAll('#method-card .type-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  const desc=document.getElementById('method-desc');
+  desc.textContent=methodDescs[m];
+  desc.className='alert '+(m==='blue65'?'success':m==='blue10'?'info':'warn');
+  // 青色控除額を自動設定
+  const aoVal={white:'0',blue10:'100000',blue65:'650000'}[m];
+  document.getElementById('s-ao').value=aoVal;
+  calcSole(); updateDocsList(); updateEtaxFlow();
+}
+
+function updateDocsList(){
+  const key=currentEntity==='corp'?'corp':currentMethod+'_sole';
+  const docs=docsData[key]||[];
+  document.getElementById('docs-list').innerHTML=docs.map(d=>{
+    const [name,type]=d.split('|');
+    const ic2=type==='必須'?'req':'opt';
+    const ico2=type==='必須'?'📋':'📎';
+    return '<div class="doc-item"><div class="doc-ic '+ic2+'">'+ico2+'</div><div class="doc-name">'+name+'</div><span class="doc-tag '+ic2+'">'+type+'</span></div>';
+  }).join('');
+}
+
+function updateEtaxFlow(){
+  const key=currentEntity==='corp'?'corp':currentMethod+'_sole';
+  const steps=etaxSteps[key]||etaxSteps['blue65_sole'];
+  document.getElementById('etax-flow').innerHTML=steps.map(function(s,i){
+    const link=s.url?'<a class="etax-link" href="'+s.url+'" target="_blank">🔗 '+s.url.replace('https://','')+'</a>':'';
+    return '<div class="etax-step"><div class="etax-num">'+(i+1)+'</div><div class="etax-body"><div class="etax-title">'+s.t+'</div><div class="etax-desc">'+s.d+'</div>'+link+'</div></div>';
+  }).join('');
+}
+
+function syncDeclFromJ(){
+  const inc=journals.filter(j=>j.type==='income').reduce((s,j)=>s+j.amount,0);
+  const exp=journals.filter(j=>j.type==='expense').reduce((s,j)=>s+j.amount,0);
+  if(inc>0){
+    if(document.getElementById('c-sales')) document.getElementById('c-sales').value=inc;
+    if(document.getElementById('s-sales')) document.getElementById('s-sales').value=inc;
+  }
+  if(exp>0){
+    if(document.getElementById('c-exp')) document.getElementById('c-exp').value=exp;
+    if(document.getElementById('s-exp')) document.getElementById('s-exp').value=exp;
+  }
+  calcCorp(); calcSole();
+  toast('📥 仕訳帳から売上・経費を取得しました');
+}
+
+function f(n){return Number(n).toLocaleString()+'円';}
+
+function calcCorp(){
+  const s=Number(document.getElementById('c-sales').value)||0;
+  const e=Number(document.getElementById('c-exp').value)||0;
+  const sal=Number(document.getElementById('c-sal').value)||0;
+  const dep=Number(document.getElementById('c-dep').value)||0;
+  const ent=Number(document.getElementById('c-ent').value)||0;
+  // 交際費損金算入限度額（中小法人：800万円全額 or 飲食費の50%）
+  const entLimit=Math.min(ent, 8000000);
+  const ti=Math.max(0,s-e-sal-dep-entLimit);
+  const rate=ti<=8000000?.15:.234;
+  const t=Math.floor(ti*rate);
+  const ct=Math.floor(t*.173); // 住民税
+  const bt=Math.floor(ti*(ti<=4000000?.034:ti<=8000000?.057:.086)); // 事業税
+  const tot=t+ct+bt;
+  const cr=document.getElementById('cr');
+  if(!cr) return;
+  cr.style.display='block';
+  document.getElementById('cr-s').textContent=f(s);
+  document.getElementById('cr-e').textContent='-'+f(e);
+  document.getElementById('cr-sal2').textContent='-'+f(sal);
+  document.getElementById('cr-d').textContent='-'+f(dep);
+  document.getElementById('cr-ent').textContent='-'+f(entLimit)+'（上限800万）';
+  document.getElementById('cr-ti').textContent=f(ti);
+  document.getElementById('cr-t').textContent=f(t)+'（'+Math.round(rate*100)+'%）';
+  document.getElementById('cr-ct').textContent=f(ct);
+  document.getElementById('cr-bt').textContent=f(bt);
+  document.getElementById('cr-tot').textContent=f(tot);
+}
+
+function calcSole(){
+  const s=Number(document.getElementById('s-sales').value)||0;
+  const e=Number(document.getElementById('s-exp').value)||0;
+  const ao=Number(document.getElementById('s-ao').value)||650000;
+  const soc=Number(document.getElementById('s-soc').value)||0;
+  const spouse=Number(document.getElementById('s-spouse')?.value)||0;
+  const dep2=Number(document.getElementById('s-dep2')?.value)||0;
+  const bas=Number(document.getElementById('s-bas').value)||480000;
+  const senj=Number(document.getElementById('s-senj')?.value)||0;
+  const jigyou=Math.max(0,s-e-senj);
+  const ti=Math.max(0,jigyou-ao-soc-spouse-dep2-bas);
+  const t=calcIT(ti),fuk=Math.floor(t*.021),tot=t+fuk;
+  // 白色比節税効果（控除なし比較）
+  const tiWhite=Math.max(0,jigyou-soc-spouse-dep2-bas);
+  const tWhite=calcIT(tiWhite);
+  const benefit=(tWhite+Math.floor(tWhite*.021))-(tot);
+  const sr=document.getElementById('sr');
+  if(!sr) return;
+  sr.style.display='block';
+  document.getElementById('sr-s').textContent=f(s);
+  document.getElementById('sr-e').textContent='-'+f(e);
+  if(document.getElementById('sr-senj-row')) document.getElementById('sr-senj-row').style.display=senj>0?'flex':'none';
+  if(document.getElementById('sr-senj')) document.getElementById('sr-senj').textContent='-'+f(senj);
+  document.getElementById('sr-j').textContent=f(jigyou);
+  document.getElementById('sr-ao').textContent='-'+f(ao);
+  document.getElementById('sr-so').textContent='-'+f(soc);
+  if(document.getElementById('sr-sp-row')) document.getElementById('sr-sp-row').style.display=spouse>0?'flex':'none';
+  if(document.getElementById('sr-sp')) document.getElementById('sr-sp').textContent='-'+f(spouse);
+  if(document.getElementById('sr-dep2-row')) document.getElementById('sr-dep2-row').style.display=dep2>0?'flex':'none';
+  if(document.getElementById('sr-dep2')) document.getElementById('sr-dep2').textContent='-'+f(dep2);
+  document.getElementById('sr-ba').textContent='-'+f(bas);
+  document.getElementById('sr-ti').textContent=f(ti);
+  document.getElementById('sr-t').textContent=f(t);
+  document.getElementById('sr-f').textContent=f(fuk);
+  document.getElementById('sr-tot').textContent=f(tot);
+  if(document.getElementById('sr-benefit')) document.getElementById('sr-benefit').textContent=benefit>0?f(benefit)+'の節税':'計算中';
+}
+
+function calcIT(n){
+  for(const [lim,rate,ded] of [[1950000,.05,0],[3300000,.1,97500],[6950000,.2,427500],[9000000,.23,636000],[18000000,.33,1536000],[40000000,.4,2796000],[Infinity,.45,4796000]]){
+    if(n<=lim) return Math.floor(n*rate-ded);
+  }
+  return 0;
+}
+
+function askDeclAI(){
+  goTab('ai-chat');
+  const ti=currentEntity==='corp'
+    ?document.getElementById('cr-ti')?.textContent
+    :document.getElementById('sr-ti')?.textContent;
+  const method=currentEntity==='sole'?methodLabels[currentMethod]:'法人税申告';
+  const q=currentEntity==='corp'
+    ?'法人の節税アドバイスをください。課税所得'+ti+'です。建設業・工務店として交際費・役員報酬・退職金・減価償却を使った節税策を最新情報で教えてください。'
+    :'個人事業主（建設業・大工）・'+method+'で節税アドバイスをください。課税所得'+ti+'です。小規模企業共済・iDeCo・専従者給与・経費計上の最適化を具体的に教えてください。';
+  document.getElementById('chat-in').value=q;
+  setTimeout(()=>sendChat(),200);
+}
+
+// ── 出力機能
+function outputPDF(){
+  const entity=currentEntity==='sole'?'個人事業主':'法人';
+  const method=currentEntity==='sole'?methodLabels[currentMethod]:'法人税申告';
+  const inc=journals.filter(j=>j.type==='income').reduce((s,j)=>s+j.amount,0);
+  const exp=journals.filter(j=>j.type==='expense').reduce((s,j)=>s+j.amount,0);
+  const ti=currentEntity==='sole'
+    ?(document.getElementById('sr-ti')?.textContent||'未計算')
+    :(document.getElementById('cr-ti')?.textContent||'未計算');
+  const tot=currentEntity==='sole'
+    ?(document.getElementById('sr-tot')?.textContent||'未計算')
+    :(document.getElementById('cr-tot')?.textContent||'未計算');
+  const y=new Date().getFullYear();
+  const jRows=journals.slice(0,20).map(function(j){
+    return '<tr><td>'+j.date+'</td><td>'+j.store+'</td><td>'+j.category+'</td><td>'+(j.type==='income'?'+':'-')+'¥'+j.amount.toLocaleString()+'</td></tr>';
+  }).join('');
+  const html='<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">'
+    +'<title>申告書サマリー '+y+'年度</title>'
+    +'<style>body{font-family:sans-serif;max-width:800px;margin:40px auto;padding:20px}'
+    +'h1{font-size:22px;color:#1A6FD4;border-bottom:3px solid #1A6FD4;padding-bottom:8px}'
+    +'.meta{color:#6B7A8D;font-size:12px;margin-bottom:20px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{background:#EEF2FA;padding:10px;text-align:left;font-size:12px;border-bottom:2px solid #D6E0F0}'
+    +'td{padding:10px;border-bottom:1px solid #EEF2FA;font-size:13px}'
+    +'.total{font-weight:800;font-size:16px;color:#1A6FD4}'
+    +'.footer{font-size:10px;color:#8896A8;margin-top:30px;border-top:1px solid #D6E0F0;padding-top:10px}'
+    +'@media print{button{display:none}}</style></head><body>'
+    +'<h1>申告書サマリー '+y+'年度</h1>'
+    +'<div class="meta">作成日：'+new Date().toLocaleDateString('ja-JP')+' / ZEIMU-AI出力</div>'
+    +'<table><thead><tr><th>区分</th><th>金額</th></tr></thead><tbody>'
+    +'<tr><td>申告者区分</td><td>'+entity+' / '+method+'</td></tr>'
+    +'<tr><td>売上合計</td><td>¥'+inc.toLocaleString()+'</td></tr>'
+    +'<tr><td>経費合計</td><td>¥'+exp.toLocaleString()+'</td></tr>'
+    +'<tr><td>課税所得（概算）</td><td>¥'+Math.max(0,inc-exp).toLocaleString()+'</td></tr>'
+    +'<tr><td>申告書上の課税所得</td><td>'+ti+'</td></tr>'
+    +'<tr><td class="total">納税総額（概算）</td><td class="total">'+tot+'</td></tr>'
+    +'</tbody></table>'
+    +'<h2 style="font-size:16px;margin:16px 0 8px;">仕訳明細（上位20件）</h2>'
+    +'<table><thead><tr><th>日付</th><th>摘要</th><th>勘定科目</th><th>金額</th></tr></thead><tbody>'
+    +jRows+'</tbody></table>'
+    +'<div class="footer">※本資料はZEIMU-AIの概算です。実際の申告はe-Taxをご利用ください。</div>'
+    +'<br><button onclick="window.print()" style="background:#1A6FD4;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;">印刷/PDF保存</button>'
+    +'</'+'body></'+'html>';
+  var w=window.open('','_blank'); w.document.write(html); w.document.close();
+}
+
+function outputXML(){
+  var y=new Date().getFullYear();
+  var inc=journals.filter(function(j){return j.type==='income';}).reduce(function(s,j){return s+j.amount;},0);
+  var exp2=journals.filter(function(j){return j.type==='expense';}).reduce(function(s,j){return s+j.amount;},0);
+  var jx=journals.map(function(j){
+    var iv=j.invoiceNo?('<InvoiceNo>'+j.invoiceNo+'</InvoiceNo>'):'';
+    var amt=(j.type==='income'?j.amount:-j.amount);
+    return '  <J d="'+j.date+'" s="'+j.store.replace(/&/g,'&amp;')+'" c="'+j.category+'" a="'+amt+'" t="'+(j.tax||0)+'">'+iv+'</J>';
+  }).join('\x0A');
+  var xml='<?xml version="1.0" encoding="UTF-8"?>\x0A'
+    +'<!-- ZEIMU-AI e-Tax '+y+' -->\x0A'
+    +'<TaxReturn year="'+y+'">\x0A'
+    +'  <Income>'+inc+'</Income>\x0A'
+    +'  <Expense>'+exp2+'</Expense>\x0A'
+    +'  <BusinessIncome>'+Math.max(0,inc-exp2)+'</BusinessIncome>\x0A'
+    +'  <Journals>\x0A'+jx+'\x0A  </Journals>\x0A'
+    +'</TaxReturn>';
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([xml],{type:'application/xml'}));
+  a.download='zeimu_etax_'+y+'.xml';
+  a.click();
+  toast('\u2705 e-Tax\u9023\u643aXML\u3092\u51fa\u529b\u3057\u307e\u3057\u305f');
+}
+function outputCopy(){
+  const inc=journals.filter(j=>j.type==='income').reduce((s,j)=>s+j.amount,0);
+  const exp=journals.filter(j=>j.type==='expense').reduce((s,j)=>s+j.amount,0);
+  const ti=currentEntity==='sole'
+    ?(document.getElementById('sr-ti')?.textContent||'要計算')
+    :(document.getElementById('cr-ti')?.textContent||'要計算');
+  const tot=currentEntity==='sole'
+    ?(document.getElementById('sr-tot')?.textContent||'要計算')
+    :(document.getElementById('cr-tot')?.textContent||'要計算');
+  const sep='━'.repeat(18);
+  const text='【e-Tax入力用データ】'+new Date().toLocaleDateString('ja-JP')+' ZEIMU-AI出力\n'
+    +sep+'\n'
+    +'申告区分：'+(currentEntity==='sole'?'個人事業主':'法人')+' / '+(currentEntity==='sole'?methodLabels[currentMethod]:'法人税申告')+'\n'
+    +sep+'\n'
+    +'売上合計：¥'+inc.toLocaleString()+'\n'
+    +'経費合計：¥'+exp.toLocaleString()+'\n'
+    +'事業所得：¥'+Math.max(0,inc-exp).toLocaleString()+'\n'
+    +'課税所得：'+ti+'\n'
+    +sep+'\n'
+    +'納税総額（概算）：'+tot+'\n'
+    +sep+'\n'
+    +'e-Tax：https://www.e-tax.nta.go.jp\n'
+    +'申告書作成：https://www.keisan.nta.go.jp';
+  navigator.clipboard.writeText(text).then(()=>toast('📋 e-Tax入力用データをコピーしました')).catch(()=>toast('⚠️ コピー失敗','w'));
+}
+
+// ═══════════════════════════════════
+// SUBSIDY — Google Search + URLコンテキスト
+// ═══════════════════════════════════
+function initChips(){
+  ['cg-industry','cg-scale','cg-needs'].forEach(gid=>{
+    const isMulti=gid==='cg-needs';
+    document.querySelectorAll('#'+gid+' .chip').forEach(c=>{
+      c.onclick=()=>{
+        if(!isMulti) document.querySelectorAll('#'+gid+' .chip').forEach(x=>x.classList.remove('sel'));
+        c.classList.toggle('sel');
+      };
+    });
+  });
+}
+
+async function searchSubsidy(){
+  const industry=[...document.querySelectorAll('#cg-industry .chip.sel')].map(c=>c.dataset.v).join('、');
+  const scale=[...document.querySelectorAll('#cg-scale .chip.sel')].map(c=>c.dataset.v).join('、');
+  const needs=[...document.querySelectorAll('#cg-needs .chip.sel')].map(c=>c.dataset.v).join('、');
+  const pref=document.getElementById('pref-sel').value;
+  if(!industry||!scale){toast('⚠️ 業種と規模を選択してください','w');return;}
+
+  const btn=document.getElementById('sub-search-btn');
+  const searchBox=document.getElementById('sub-searching');
+  const msgEl=document.getElementById('sub-search-msg');
+  const stepEl=document.getElementById('sub-search-step');
+  document.getElementById('sub-results').innerHTML='';
+  btn.disabled=true;
+  searchBox.style.display='flex';
+
+  // ステップ表示アニメ
+  const steps=[
+    ['🌐 Google検索でリアルタイム情報を収集中...','国税庁・経産省・jGrantsを検索しています'],
+    ['📄 URLコンテキストで公式ページを解析中...','補助金の対象条件・金額を確認しています'],
+    ['🧠 Gemini 2.5 Flashが最適な補助金を選定中...','あなたの事業情報と照合しています'],
+  ];
+  let si=0;
+  const stepTimer=setInterval(()=>{if(si<steps.length){msgEl.textContent=steps[si][0];stepEl.textContent=steps[si][1];si++;}},2000);
+
+  // URLコンテキスト付きプロンプト
+  const prompt =
+    'あなたは日本の補助金・助成金・節税の専門アドバイザーです。\n'
+    +'以下の事業者に適した支援策を、Google検索と公式URLの情報を参照して最新情報でリストアップしてください。\n\n'
+    +'【参照URL】国税庁: https://www.nta.go.jp / jGrants: https://jgrants.go.jp / 中小機構: https://www.smrj.go.jp\n\n'
+    +'【事業者情報】業種：'+industry+' / 規模：'+scale+' / 課題：'+needs+' / 所在地：'+pref+'\n\n'
+    +'以下のJSON配列のみで返答（前置き不要）:\n'
+    +'[{"name":"名称","type":"国/都道府県/節税","amount":"金額","desc":"説明","tags":["タグ"],'
+    +'"deadline":"期限","priority":"高/中/低","source_url":"URL","source_name":"サイト名"}]\n'
+    +'8〜10件、priority高優先、2025〜2026年現在申請可能なものを選ぶこと。';
+
+  try{
+    const txt=await callAI(prompt, true, false); // Google Search ON
+    clearInterval(stepTimer);
+    searchBox.style.display='none';
+    btn.disabled=false;
+    const items=parseJ(txt);
+    if(items&&items.length) renderSubResults(items,industry,pref);
+    else throw new Error('parse fail');
+  }catch(err){
+    clearInterval(stepTimer);
+    searchBox.style.display='none';
+    btn.disabled=false;
+    renderSubResults(getLocalData(industry,needs,pref),industry,pref,true);
+  }
+}
+
+function renderSubResults(items,industry,pref,isFallback){
+  _subItems=[];
+  var el=document.getElementById('sub-results');
+  var badge=isFallback
+    ?'<span style="font-size:10px;padding:3px 8px;background:#FFF3E0;color:#E07020;border:1px solid rgba(224,112,32,.3);border-radius:10px;font-weight:700;">知識ベース</span>'
+    :'<span class="url-ctx-badge">Google+URLコンテキスト</span>';
+  var html='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">'
+    +'<span style="font-size:13px;font-weight:800;color:var(--blue-dark);">検索結果 '+items.length+'件</span>'
+    +badge
+    +'<span style="font-size:10px;color:var(--text3);margin-left:auto;">'+industry+' / '+pref+'</span>'
+    +'</div>';
+  items.forEach(function(item){
+    var tc=item.type==='国'?'gov':item.type==='節税'?'tax':'pref';
+    var priHtml=item.priority==='高'?'<span class="sub-priority hi">★ 優先度高</span>':item.priority==='中'?'<span class="sub-priority mid">▲ 優先度中</span>':'';
+    var dlHtml=item.deadline?'<div class="sub-deadline">📅 '+item.deadline+'</div>':'';
+    var tagsHtml=(item.tags||[]).map(function(t){return '<span class="sub-tag">'+t+'</span>';}).join('');
+    var srcHtml=item.source_url?'<div class="sub-source">📎 出典: <a href="'+item.source_url+'" target="_blank">'+(item.source_name||item.source_url)+'</a></div>':'';
+    var idx3=_subItems.length; _subItems.push(item.name||'');
+    html+='<div class="sub-item">'
+      +'<div class="sub-item-top"><span class="sub-type '+tc+'">'+(item.type||'国')+'</span>'+priHtml+'</div>'
+      +'<div class="sub-name">'+(item.name||'')+'</div>'
+      +'<div class="sub-amount">'+(item.amount||'')+'</div>'
+      +'<div class="sub-desc">'+(item.desc||'')+'</div>'
+      +dlHtml
+      +'<div class="sub-tags">'+tagsHtml+'</div>'
+      +srcHtml
+      +'<div class="sub-actions">'
+      +'<button class="btn-ask" onclick="askDetail(_subItems['+idx3+'])">🤖 詳しく聞く</button>'
+      +'<button class="btn-sec" onclick="askApply(_subItems['+idx3+'])">📝 申請手順</button>'
+      +'</div></div>';
+  });
+  el.innerHTML=html;
+}
+function askDetail(name){goTab('ai-chat');document.getElementById('chat-in').value='「'+name+'」について詳しく教えてください。建設業・大工の個人事業主です。対象条件・申請方法・必要書類・採択のコツを教えてください。';setTimeout(()=>sendChat(),200);}
+function askApply(name){goTab('ai-chat');document.getElementById('chat-in').value='「'+name+'」の申請手順をステップバイステップで教えてください。建設業・個人事業主です。2025年最新情報でお願いします。';setTimeout(()=>sendChat(),200);}
+
+function getLocalData(industry,needs,pref){
+  return [
+    {name:"ものづくり・商業・サービス生産性向上促進補助金",type:"国",amount:"最大1,250万円（補助率1/2〜2/3）",desc:"設備投資・システム構築に活用。建設業の生産性向上のための機械・工具・CADシステム購入も対象。Gビズプライム登録が必要。",tags:["設備投資","建設","生産性向上"],deadline:"年4〜5回公募",priority:"高",source_url:"https://portal.monodukuri-hojo.jp",source_name:"ものづくり補助金ポータル"},
+    {name:"小規模事業者持続化補助金",type:"国",amount:"最大250万円（補助率2/3）",desc:"販路開拓・業務効率化の費用を補助。ウェブ制作・広告・展示会出展費も対象。個人事業主でも申請しやすく採択率高め。",tags:["個人事業主","販路開拓","広告"],deadline:"年3〜4回公募",priority:"高",source_url:"https://r3.jizokukahojokin.info",source_name:"持続化補助金"},
+    {name:"IT導入補助金",type:"国",amount:"最大450万円（補助率1/2〜3/4）",desc:"会計ソフト・施工管理アプリ・受発注システム導入に活用。建設業向けITツールの実績多数。インボイス対応ツールは補助率優遇あり。",tags:["DX","IT","会計","建設"],deadline:"随時（複数回）",priority:"高",source_url:"https://www.it-hojo.jp",source_name:"IT導入補助金"},
+    {name:"青色申告特別控除（65万円）",type:"節税",amount:"年間最大65万円の所得控除",desc:"e-Taxで電子申告すると65万円控除。白色申告比で最大年20万円以上の節税効果。複式簿記の帳簿が必要。",tags:["個人事業主","節税","確定申告"],deadline:"毎年3/15",priority:"高",source_url:"https://www.nta.go.jp",source_name:"国税庁"},
+    {name:"小規模企業共済",type:"節税",amount:"年間最大84万円の所得控除",desc:"経営者・個人事業主の退職金制度。月最大7万円の掛金が全額所得控除。解約時の受取金も退職所得扱いで税優遇大。",tags:["個人事業主","節税","老後保障"],deadline:"随時加入",priority:"高",source_url:"https://www.smrj.go.jp",source_name:"中小機構"},
+    {name:"省エネルギー投資促進支援事業費補助金",type:"国",amount:"最大1億円（中小補助率1/3）",desc:"省エネ機器・設備更新に活用。建設業の事務所空調・照明LED化等も対象。年度内設備導入完了が条件。",tags:["省エネ","設備","脱炭素"],deadline:"年1〜2回",priority:"中",source_url:"https://www.meti.go.jp",source_name:"経済産業省"},
+    {name:"雇用調整助成金・人材確保等支援助成金",type:"国",amount:"対象経費の最大2/3",desc:"新規雇用・技能訓練費用に活用できる助成金。建設業の若手採用・技能訓練費が対象になるケースあり。",tags:["人材","採用","育成"],deadline:"随時",priority:"中",source_url:"https://www.mhlw.go.jp",source_name:"厚生労働省"},
+    {name:"経営革新計画承認制度",type:"国",amount:"低金利融資・補助金優遇",desc:"都道府県に新事業計画を承認してもらうと各種支援が受けやすくなる。日本政策金融公庫の特別貸付も利用可。",tags:["認定","融資","計画"],deadline:"随時",priority:"中",source_url:"https://www.smrj.go.jp",source_name:"中小機構"},
+  ];
+}
+
+// ═══════════════════════════════════
+// AI CHAT — URLコンテキスト付き
+// ═══════════════════════════════════
+function qqAsk(q){document.getElementById('chat-in').value=q;sendChat();}
+
+async function sendChat(){
+  const input=document.getElementById('chat-in');
+  const msg=input.value.trim();
+  if(!msg) return;
+  input.value='';autoH(input);
+  appendMsg('user',msg);
+  chatHistory.push(msg);
+  const btn=document.getElementById('send-btn');
+  btn.disabled=true;
+  const tid=appendTyping();
+
+  // URLコンテキスト付きシステムプロンプト
+  const system='あなたは日本の税務・補助金の専門家「ZEIMU-AI」です。\n'
+    +'以下の公式情報源をURLコンテキストとして参照しながら、最新・正確な情報で回答してください：\n'
+    +'- 国税庁 https://www.nta.go.jp （税法・確定申告・インボイス）\n'
+    +'- 経済産業省 https://www.meti.go.jp （補助金・中小企業支援）\n'
+    +'- jGrants https://jgrants.go.jp （補助金一覧・申請情報）\n'
+    +'- 中小機構 https://www.smrj.go.jp （経営支援・共済）\n\n'
+    +'ユーザーは建設業・大工業の経営者または個人事業主です。\n'
+    +'日本語で、実務的・具体的なアドバイスをしてください。\n'
+    +'税率・控除額・補助金額などの数字は正確に記載してください。\n'
+    +'最後に「※ 個別の税務・申請判断については税理士・専門家にご確認ください」を添えてください。';
+
+  const hist=chatHistory.length>1?'【直近の会話】\n'+chatHistory.slice(-6).map((m,i)=>i%2===0?'Q: '+m:'A: '+m).join('\n')+'\n\n':'';
+  const prompt=system+'\n\n'+hist+'質問: '+msg;
+
+  try{
+    const reply=await callAI(prompt, true, false); // Google Search ON
+    removeTyping(tid);
+    appendMsg('ai',reply);
+    chatHistory.push(reply);
+  }catch(e){
+    removeTyping(tid);
+    appendMsg('ai','⚠️ 通信エラーが発生しました。\nFirebase Functionsへの接続を確認してください。\nエンドポイント: '+FUNCTIONS_BASE);
+  }
+  btn.disabled=false;
+}
+
+function appendMsg(role,text){
+  const el=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className='msg '+role;
+  const html=text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  const av=role==='ai'?'税':'👤';
+  const tm=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  d.innerHTML='<div class="msg-av '+role+'">'+av+'</div><div><div class="msg-bub">'+html+'</div><div class="msg-time">'+tm+'</div></div>';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+function appendTyping(){
+  const id='ty'+Date.now();
+  const el=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className='msg ai';d.id=id;
+  d.innerHTML='<div class="msg-av ai">税</div><div class="msg-bub"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+  return id;
+}
+function removeTyping(id){const e=document.getElementById(id);if(e)e.remove();}
+function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+// ═══════════════════════════════════
+// MISC
+// ═══════════════════════════════════
+function toggleCode(){const e=document.getElementById('fn-code');e.style.display=e.style.display==='none'?'block':'none';}
+
+function toast(msg,type='s'){
+  const t=document.createElement('div');
+  const bg=type==='s'?'var(--green)':type==='w'?'var(--orange)':'var(--red)';
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:'+bg+';color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:nowrap;animation:fadeUp .3s ease;';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+// ════════════════════════════════════════
+// 2位: 消費税簡易課税計算
+// ════════════════════════════════════════
+let selectedKind = 3;
+const kindDesc = {
+  1:'🏭 卸売業（第1種）：みなし仕入率90%。他の者から購入した商品をそのまま販売する事業。',
+  2:'🛒 小売業（第2種）：みなし仕入率80%。消費者向けに商品を直接販売する事業。',
+  3:'🔨 建設業（第3種）：みなし仕入率70%。土木工事・大工・電気工事・管工事・内装仕上げ等が該当。材料を自己調達して加工するケースが対象。',
+  4:'🍽 飲食業・その他（第4種）：みなし仕入率60%。飲食店業・修理業・加工業（第3種以外）等。',
+  5:'💼 サービス業・金融（第5種）：みなし仕入率50%。運輸・通信・金融・保険・サービス業等。',
+  6:'🏠 不動産業（第6種）：みなし仕入率40%。不動産の貸付・譲渡等。'
+};
+const kindRates = {1:0.9, 2:0.8, 3:0.7, 4:0.6, 5:0.5, 6:0.4};
+
+function selectKind(n, el) {
+  selectedKind = n;
+  document.querySelectorAll('.kind-btn').forEach(b => b.classList.remove('kind-sel'));
+  el.classList.add('kind-sel');
+  document.getElementById('kind-desc').textContent = kindDesc[n];
+  calcConsumption();
+}
+
+function syncConsumptionFromJ() {
+  const inc = journals.filter(j=>j.type==='income').reduce((s,j)=>s+j.amount,0);
+  if(inc > 0) {
+    // 税込売上から税抜に変換（10%想定）
+    const excl = Math.round(inc / 1.1);
+    document.getElementById('ct-sales').value = excl;
+    calcConsumption();
+    toast('✅ 仕訳帳から売上を取得しました');
+  } else {
+    toast('⚠️ 仕訳帳に売上データがありません','w');
+  }
+}
+
+function calcConsumption() {
+  const sales = Number(document.getElementById('ct-sales').value)||0;
+  const taxRate = Number(document.getElementById('ct-rate').value)||0.10;
+  const method = document.getElementById('ct-method').value;
+  const actWrap = document.getElementById('ct-actual-wrap');
+  actWrap.style.display = method==='actual' ? 'block' : 'none';
+  if(!sales) { document.getElementById('ct-result').style.display='none'; return; }
+
+  const taxCollect = Math.floor(sales * taxRate);       // 売上消費税
+  const miRate = kindRates[selectedKind] || 0.7;
+  const miDeduct = Math.floor(taxCollect * miRate);     // みなし仕入控除
+  const actExp = Number(document.getElementById('ct-actual-exp')?.value)||0;
+  const actDeduct = Math.floor(actExp * taxRate);       // 実際仕入控除
+  const paySimple = Math.max(0, taxCollect - miDeduct);
+  const payActual = Math.max(0, taxCollect - actDeduct);
+  const pay = method==='simple' ? paySimple : payActual;
+  const benefit = payActual - paySimple; // 簡易課税の節税効果
+
+  const res = document.getElementById('ct-result');
+  res.style.display = 'block';
+  document.getElementById('ctr-sales').textContent = sales.toLocaleString()+'円';
+  document.getElementById('ctr-tax-collect').textContent = taxCollect.toLocaleString()+'円';
+  document.getElementById('ctr-rate-pct').textContent = Math.round(miRate*100);
+  document.getElementById('ctr-deduct').textContent = miDeduct.toLocaleString()+'円';
+  document.getElementById('ctr-actual-deduct').textContent = actDeduct.toLocaleString()+'円';
+  document.getElementById('ctr-pay').textContent = pay.toLocaleString()+'円';
+  document.getElementById('ctr-row-simple').style.display = method==='simple' ? 'flex' : 'none';
+  document.getElementById('ctr-row-actual').style.display = method==='actual' ? 'flex' : 'none';
+  const brow = document.getElementById('ctr-benefit-row');
+  if(method==='simple' && benefit > 0) {
+    document.getElementById('ctr-benefit').textContent = benefit.toLocaleString()+'円お得';
+    brow.style.display = 'flex';
+  } else if(method==='simple' && benefit <= 0) {
+    document.getElementById('ctr-benefit').textContent = Math.abs(benefit).toLocaleString()+'円多く納税（本則課税が有利）';
+    brow.style.display = 'flex';
+    brow.style.background = 'var(--orange-dim)';
+    brow.style.color = 'var(--orange)';
+  } else {
+    brow.style.display = 'none';
+  }
+}
+
+function askConsumptionAI() {
+  const sales = document.getElementById('ct-sales').value||'未入力';
+  const pay = document.getElementById('ctr-pay')?.textContent||'未計算';
+  goTab('ai-chat');
+  document.getElementById('chat-in').value =
+    '消費税について相談があります。建設業（第3種、みなし仕入率70%）で課税売上'+sales+'円、納付消費税'+pay+'です。簡易課税と本則課税どちらが有利か、節税のポイントを最新情報で教えてください。';
+  setTimeout(()=>sendChat(), 200);
+}
+
+// ════════════════════════════════════════
+// 3位: Firestore連携
+// ════════════════════════════════════════
+// Firebase SDKはCDNから動的ロード
+let db = null;
+let firestoreEnabled = false;
+let currentUser = null;
+
+async function initFirestore() {
+  try {
+    // Firebase Hosting方式: /__/firebase/init.js が自動でapiKey注入済み
+    // HTMLにapiKeyを書かない → GitHub公開完全安全
+    if(typeof firebase === 'undefined') return;
+    db = firebase.firestore();
+    // 匿名認証
+    await firebase.auth().signInAnonymously();
+    currentUser = firebase.auth().currentUser;
+    firestoreEnabled = true;
+    updateSyncBadge(true);
+    // Firestoreからデータ読み込み
+    await loadFromFirestore();
+  } catch(e) {
+    console.log('Firestore初期化スキップ（localStorage使用）:', e.message);
+    firestoreEnabled = false;
+  }
+}
+
+function updateSyncBadge(on) {
+  const b = document.getElementById('sync-badge');
+  if(!b) return;
+  b.textContent = on ? '☁️ Cloud同期中' : '💾 ローカル保存';
+  b.style.color = on ? 'var(--green)' : 'var(--text3)';
+}
+
+async function loadFromFirestore() {
+  if(!db || !currentUser) return;
+  try {
+    const snap = await db.collection('users').doc(currentUser.uid)
+      .collection('journals').orderBy('createdAt','desc').limit(200).get();
+    if(!snap.empty) {
+      journals = snap.docs.map(d=>({id:d.id,...d.data()}));
+      localStorage.setItem('zeimu_j', JSON.stringify(journals));
+      updateDash(); renderJ();
+      toast('☁️ Firestoreからデータを取得しました');
+    }
+  } catch(e) { console.log('Firestore読込エラー:', e); }
+}
+
+async function saveToFirestore(entry) {
+  if(!db || !currentUser) return;
+  try {
+    await db.collection('users').doc(currentUser.uid)
+      .collection('journals').doc(String(entry.id)).set({
+        ...entry,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+  } catch(e) { console.log('Firestore保存エラー:', e); }
+}
+
+// addJをFirestore対応に拡張
+const _addJ_orig = window._addJ_wrapped || null;
+function addJ(e) {
+  e.id = Date.now();
+  journals.unshift(e);
+  localStorage.setItem('zeimu_j', JSON.stringify(journals));
+  updateDash(); renderJ();
+  // Firestore同期（非同期・失敗しても継続）
+  if(firestoreEnabled) saveToFirestore(e).catch(console.log);
+}
+
+// ════════════════════════════════════════
+// 4位: インボイス番号 国税庁API照合
+// ════════════════════════════════════════
+const INVOICE_API = 'https://api.invoice-kohyo.nta.go.jp/ruler/v1/';
+
+async function checkInvoiceNo(invoiceNo) {
+  if(!invoiceNo || !invoiceNo.startsWith('T')) return;
+  const num = invoiceNo.replace(/^T/, '');
+  const el = document.getElementById('invoice-check-result');
+  if(!el) return;
+  el.style.display = 'block';
+  el.className = 'invoice-check-result alert info';
+  el.textContent = '🔍 国税庁APIでインボイス番号を照合中...';
+  try {
+    // 国税庁インボイス公表サイトAPI（CORSはfetch-no-corsまたはプロキシ経由）
+    // プロキシ経由でFunctionsに問い合わせ
+    const iUrl = 'https://www.invoice-kohyo.nta.go.jp/regno-api/invoice?id='+num;
+    const prompt = 'インボイス登録番号「'+invoiceNo+'」の登録状況を確認してください。{"registered":true/false,"name":"事業者名","business":"業種","status":"登録中/廃止/不明"}のJSON形式のみで返してください。';
+    const txt = await callAIWithUrl(prompt, 'https://www.invoice-kohyo.nta.go.jp');
+    const result = parseJO(txt);
+    if(!result) throw new Error('parse fail');
+    if(result.registered) {
+      el.className = 'invoice-check-result alert success';
+      el.innerHTML = '✅ <strong>登録済み</strong>：'+(result.name||'')+'（'+(result.business||'')+'）<br><small>インボイス番号 '+invoiceNo+' は有効です</small>';
+    } else {
+      el.className = 'invoice-check-result alert warn';
+      el.innerHTML = '⚠️ <strong>要確認</strong>：'+(result.name||'不明')+'（'+(result.status||'不明')+'）<br><small>インボイス番号 '+invoiceNo+'</small>';
+    }
+  } catch(e) {
+    el.className = 'invoice-check-result alert warn';
+    el.textContent = '⚠️ インボイス照合に失敗しました（手動確認してください）';
+  }
+}
+
+// ── インボイス番号入力フィールドの照合ボタン（手動）
+function manualCheckInvoice() {
+  const v = document.getElementById('m-inv').value.trim();
+  // ガード: 未入力・プレースホルダー・13桁未満はブロック
+  if(!v || v === 'T1234567890123' || v.replace(/^T/,'').length < 13){
+    toast('有効なインボイス番号（T+13桁）を入力してください','w');
+    return;
+  }
+  let el = document.getElementById('invoice-check-result');
+  if(!el) {
+    el = document.createElement('div');
+    el.id = 'invoice-check-result';
+    el.style.cssText = 'margin-top:8px;font-size:12px;';
+    document.getElementById('m-inv').parentNode.appendChild(el);
+  }
+  checkInvoiceNo(v.startsWith('T') ? v : 'T'+v);
+}
+
+</script>
+<script>
+// ── toast（全スクリプトから参照できるようグローバル定義）
+function toast(msg,type='s'){
+  const t=document.createElement('div');
+  const bg=type==='s'?'var(--green)':type==='w'?'var(--orange)':'var(--red)';
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:'+bg+';color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:nowrap;animation:fadeUp .3s ease;';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+// ════════════════════════════════════════
+// Firebase Auth + Firestore（daiku-v7と同一方式）
+// ════════════════════════════════════════
+function fb(){ return window.__fb; }
+
+function initAuth(){
+  if(!window.__fb){ window.addEventListener('fbReady', initAuth, {once:true}); return; }
+  fb().onAuthStateChanged(fb().auth, async function(user){
+    if(user){
+      currentUser = user;
+      try{
+        var snap = await fb().getDoc(fb().doc(fb().db,'users',user.uid));
+        if(snap.exists()){
+          if(snap.data().isAdmin) document.getElementById('adminMenuBtn').style.display='block';
+        } else {
+          await fb().setDoc(fb().doc(fb().db,'users',user.uid),{
+            uid:user.uid, email:user.email,
+            name:user.email.split('@')[0],
+            isAdmin:false, createdAt:fb().serverTimestamp()
+          });
+        }
+        firestoreEnabled=true; updateSyncBadge(true);
+        await loadFromFirestore();
+        showApp();
+      }catch(e){ showApp(); }
+    } else {
+      currentUser=null; firestoreEnabled=false;
+      document.getElementById('loginScreen').style.display='flex';
+    }
+  });
+}
+document.addEventListener('DOMContentLoaded', initAuth);
+
+function showApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appHeader').style.display='flex';
+  document.getElementById('appNav').style.display='flex';
+  document.getElementById('appMain').style.display='block';
+  // ログイン後に初期化（window.onloadの代替）
+  if(typeof initApp === 'function') initApp();
+}
+
+async function zLogin(){
+  var email=document.getElementById('zEmail').value.trim();
+  var pass=document.getElementById('zPass').value;
+  var err=document.getElementById('zErr');
+  err.textContent='';
+  if(!email||!pass){err.textContent='メールとパスワードを入力してください';return;}
+  try{
+    await fb().signInWithEmailAndPassword(fb().auth, email, pass);
+  }catch(e){
+    var m={'auth/user-not-found':'登録されていないメールアドレスです','auth/wrong-password':'パスワードが間違っています','auth/invalid-credential':'メールまたはパスワードが間違っています','auth/too-many-requests':'しばらく待ってから再試行してください'};
+    err.textContent=m[e.code]||'ログインに失敗しました';
+  }
+}
+
+async function zLogout(){
+  if(!confirm('ログアウトしますか？'))return;
+  await fb().signOut(fb().auth);
+  document.getElementById('adminMenuBtn').style.display='none';
+  document.getElementById('appHeader').style.display='none';
+  document.getElementById('appNav').style.display='none';
+  document.getElementById('appMain').style.display='none';
+  // localStorage仕訳もクリア（セキュリティ）
+  journals=[];
+  updateDash(); renderJ();
+}
+
+function openAdminPanel(){ document.getElementById('adminPanel').style.display='flex'; loadZUsers(); }
+function closeAdminPanel(){
+  document.getElementById('adminPanel').style.display='none';
+  document.getElementById('nuErr').textContent='';
+  ['nuName','nuEmail','nuPass'].forEach(function(id){ document.getElementById(id).value=''; });
+}
+
+function genZPass(){
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+  var p=''; for(var i=0;i<10;i++) p+=chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('nuPass').value=p;
+}
+
+async function addZUser(){
+  var name=document.getElementById('nuName').value.trim();
+  var email=document.getElementById('nuEmail').value.trim();
+  var pass=document.getElementById('nuPass').value;
+  var err=document.getElementById('nuErr');
+  err.textContent=''; err.style.color='#D32F2F';
+  if(!name){err.textContent='表示名を入力してください';return;}
+  if(!email){err.textContent='メールアドレスを入力してください';return;}
+  if(pass.length<6){err.textContent='パスワードは6文字以上必要です';return;}
+  var btn=document.getElementById('addZUserBtn');
+  btn.textContent='登録中...'; btn.disabled=true;
+  try{
+    var f2=fb();
+    var cred=await f2.createUserWithEmailAndPassword(f2.auth, email, pass);
+    await f2.setDoc(f2.doc(f2.db,'users',cred.user.uid),{
+      uid:cred.user.uid, name:name, email:email, isAdmin:false, createdAt:f2.serverTimestamp()
+    });
+    err.style.color='#12A05A'; err.textContent='✅ '+name+' を登録しました！';
+    ['nuName','nuEmail','nuPass'].forEach(function(id){ document.getElementById(id).value=''; });
+    loadZUsers();
+  }catch(e){
+    var m={'auth/email-already-in-use':'このメールアドレスは既に登録されています','auth/invalid-email':'メールアドレスの形式が正しくありません','auth/weak-password':'パスワードが短すぎます（6文字以上）'};
+    err.textContent='エラー: '+(m[e.code]||e.message);
+  }
+  btn.textContent='登録する'; btn.disabled=false;
+}
+
+async function loadZUsers(){
+  var el=document.getElementById('zUserList');
+  el.innerHTML='<div style="color:#888;font-size:12px;">読み込み中...</div>';
+  try{
+    var f2=fb();
+    var snap=await f2.getDocs(f2.query(f2.collection(f2.db,'users'),f2.orderBy('name')));
+    if(snap.empty){el.innerHTML='<div style="color:#888;font-size:12px;">登録ユーザーなし</div>';return;}
+    var html='';
+    snap.forEach(function(d){
+      var u=d.data();
+      var ab=u.isAdmin?'<span style="background:#1A6FD4;color:#fff;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;">管理者</span>':'';
+      var nm=(u.name||'名前なし').replace(/"/g,'&quot;');
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#F4F6FA;border-radius:8px;margin-bottom:6px;border:1px solid #D6E0F0;">'
+        +'<div><div style="font-weight:700;font-size:13px;">'+(u.name||'名前なし')+ab+'</div>'
+        +'<div style="font-size:11px;color:#6B7A8D;margin-top:2px;">'+(u.email||d.id)+'</div></div>'
+        +'<button data-uid="'+d.id+'" data-nm="'+nm+'" onclick="deleteZUser(this.dataset.uid,this.dataset.nm,this)" '
+        +'style="background:#FFF0F0;border:1px solid #F0A0A0;color:#D32F2F;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">削除</button>'
+        +'</div>';
+    });
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML='<div style="color:#D32F2F;font-size:12px;">エラー: '+e.message+'</div>'; }
+}
+
+async function deleteZUser(uid, name, btn){
+  if(!confirm(name+'をFirestoreから削除しますか？\n※Firebase AuthはFirebaseコンソールで別途削除が必要です。'))return;
+  btn.textContent='削除中...'; btn.disabled=true;
+  try{
+    var f2=fb(); await f2.deleteDoc(f2.doc(f2.db,'users',uid)); loadZUsers();
+  }catch(e){ alert('削除エラー: '+e.message); btn.textContent='削除'; btn.disabled=false; }
+}
+
+function updateSyncBadge(on){
+  var b=document.getElementById('sync-badge');
+  if(!b) return;
+  b.textContent=on?'☁️ Cloud同期中':'💾 ローカル保存';
+  b.style.color=on?'var(--green)':'var(--text3)';
+}
+
+async function loadFromFirestore(){
+  if(!firestoreEnabled||!currentUser) return;
+  try{
+    var f2=fb();
+    var snap=await f2.getDocs(f2.query(f2.collection(f2.db,'users/'+currentUser.uid+'/journals'),f2.orderBy('date','desc')));
+    if(!snap.empty){
+      journals=snap.docs.map(function(d){ var v=d.data(); delete v.createdAt; return v; });
+      localStorage.setItem('zeimu_j',JSON.stringify(journals));
+      updateDash(); renderJ();
+      toast('☁️ Firestoreからデータを取得しました');
+    }
+  }catch(e){ console.log('Firestore読込エラー:',e); }
+}
+
+async function saveToFirestore(entry){
+  if(!firestoreEnabled||!currentUser) return;
+  try{
+    var f2=fb();
+    await f2.setDoc(f2.doc(f2.db,'users',currentUser.uid,'journals',String(entry.id)),
+      Object.assign({},entry,{createdAt:f2.serverTimestamp()}));
+  }catch(e){ console.log('Firestore保存エラー:',e); }
+}</script>
+
+<!-- Firebase SDK — daiku-v7と同一のmodule方式 -->
+</script>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, deleteDoc, orderBy, query, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCVk2miG5TK1ffTofXLh0hHgeSbOvmIgZ8",
+  authDomain: "kensetsu-nippo-842a2.firebaseapp.com",
+  projectId: "kensetsu-nippo-842a2",
+  storageBucket: "kensetsu-nippo-842a2.firebasestorage.app",
+  messagingSenderId: "702880974315",
+  appId: "1:702880974315:web:985321dc9180046629c5ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.__fb = {
+  auth, db,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, onAuthStateChanged,
+  collection, doc, setDoc, getDoc, getDocs, addDoc, deleteDoc, orderBy, query, serverTimestamp
+};
+window.dispatchEvent(new Event('fbReady'));
+</script>
+<script>
+function fb(){ return window.__fb; }
+</script>
+</body>
+</html>
