@@ -1,0 +1,378 @@
+:<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>税務ハブ | HeartsHouse</title>
+<style>
+:root{
+  --ink:#1a1a2a;
+  --gold:#c9a84c;
+  --gold2:#e8cc7a;
+  --bg:#f7f5f0;
+  --card:#ffffff;
+  --border:#e2ddd4;
+  --text2:#6b6560;
+  --red:#c0392b;
+  --green:#2e7d32;
+  --blue:#1565c0;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Helvetica Neue',sans-serif;min-height:100vh}
+
+/* ヘッダー */
+.header{
+  background:var(--ink);
+  padding:16px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.header-brand{display:flex;align-items:center;gap:10px}
+.header-icon{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.header-title{font-size:16px;font-weight:800;color:#fff;letter-spacing:.02em}
+.header-sub{font-size:9px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-top:1px}
+.header-user{font-size:11px;color:rgba(255,255,255,.5);text-align:right}
+.header-user span{color:var(--gold2);font-weight:700;display:block}
+
+/* ログイン */
+.login-wrap{max-width:380px;margin:40px auto;padding:0 16px}
+.login-card{background:var(--card);border-radius:16px;padding:28px;box-shadow:var(--shadow)}
+.login-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+.inp{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:10px;outline:none;transition:border .15s}
+.inp:focus{border-color:var(--gold)}
+.btn-login{width:100%;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.03em}
+.login-err{color:var(--red);font-size:11px;margin-top:6px;display:none}
+
+/* メイン */
+main{padding:14px}
+
+/* 月次サマリー */
+.summary-bar{background:var(--ink);border-radius:12px;padding:14px;margin-bottom:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sum-item{text-align:center}
+.sum-num{font-size:18px;font-weight:800}
+.sum-num.income{color:var(--gold2)}
+.sum-num.expense{color:#ef9a9a}
+.sum-num.profit{color:#a5d6a7}
+.sum-label{font-size:9px;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.05em}
+
+/* セクションタイトル */
+.sec-title{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.12em;text-transform:uppercase;margin:16px 0 8px;padding-left:2px}
+
+/* アプリカード */
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.app-card{background:var(--card);border-radius:14px;padding:16px 14px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;text-decoration:none;display:block;border:1.5px solid transparent;position:relative;overflow:hidden}
+.app-card:active{transform:scale(.97)}
+.app-card.featured{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:18px}
+.app-card.featured .app-icon{width:52px;height:52px;font-size:26px}
+.app-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;flex-shrink:0}
+.app-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.app-desc{font-size:10px;color:var(--text2);line-height:1.5}
+.app-badge{position:absolute;top:10px;right:10px;font-size:8px;padding:2px 7px;border-radius:10px;font-weight:700}
+.badge-new{background:#e8f5e9;color:var(--green)}
+.badge-ai{background:#fff3e0;color:#e65100}
+.badge-hot{background:#fce4ec;color:#c62828}
+
+/* テーマ別カラー */
+.theme-tax .app-icon{background:#fff8e1}
+.theme-kokuzei .app-icon{background:#e3f2fd}
+.theme-setsuzei .app-icon{background:#e8f5e9}
+.theme-nisa .app-icon{background:#f3e5f5}
+.theme-furusato .app-icon{background:#fce4ec}
+.theme-ideco .app-icon{background:#e0f2f1}
+
+.theme-tax{border-color:#f9a825}
+.theme-kokuzei{border-color:#1565c0}
+.theme-setsuzei{border-color:#2e7d32}
+.theme-nisa{border-color:#6a1b9a}
+.theme-furusato{border-color:#c62828}
+.theme-ideco{border-color:#00695c}
+
+/* クイックアクション */
+.quick-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.quick-row::-webkit-scrollbar{display:none}
+.quick-btn{flex-shrink:0;padding:8px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:700;color:var(--ink);cursor:pointer;white-space:nowrap;box-shadow:var(--shadow)}
+.quick-btn:active{background:var(--border)}
+
+/* 最近の仕訳 */
+.journal-list{display:flex;flex-direction:column;gap:6px}
+.journal-item{background:var(--card);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.j-type{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.j-type.income{background:#e8f5e9}
+.j-type.expense{background:#fce4ec}
+.j-info{flex:1}
+.j-subject{font-size:12px;font-weight:700}
+.j-date{font-size:10px;color:var(--text2);margin-top:1px}
+.j-amount{font-size:13px;font-weight:800}
+.j-amount.income{color:var(--green)}
+.j-amount.expense{color:var(--red)}
+
+/* ローディング */
+.loading{text-align:center;padding:40px;color:var(--text2);font-size:13px}
+
+/* トースト */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:20px;font-size:12px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-icon">⚖️</div>
+    <div>
+      <div class="header-title">税務ハブ</div>
+      <div class="header-sub">HeartsHouse Finance</div>
+    </div>
+  </div>
+  <div class="header-user" id="headerUser" style="display:none">
+    <span id="headerName">-</span>
+    ログイン中
+  </div>
+</div>
+
+<!-- ログイン画面 -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-title">⚖️ 税務ハブ</div>
+    <div class="login-sub">HeartsHouse 財務管理システム</div>
+    <input class="inp" id="lEmail" type="email" placeholder="メールアドレス"
+      onkeydown="if(event.key==='Enter')document.getElementById('lPass').focus()">
+    <input class="inp" id="lPass" type="password" placeholder="パスワード"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">ログイン</button>
+    <div class="login-err" id="loginErr">メールアドレスまたはパスワードが違います</div>
+  </div>
+</div>
+
+<!-- メイン画面 -->
+<div id="mainScreen" style="display:none">
+  <main>
+    <!-- 月次サマリー -->
+    <div class="summary-bar">
+      <div class="sum-item">
+        <div class="sum-num income" id="sumIncome">-</div>
+        <div class="sum-label">今月の売上</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-num expense" id="sumExpense">-</div>
+        <div class="sum-label">今月の経費</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-num profit" id="sumProfit">-</div>
+        <div class="sum-label">利益</div>
+      </div>
+    </div>
+
+    <!-- クイックアクション -->
+    <div class="quick-row">
+      <button class="quick-btn" onclick="openApp('zeimu-ai-v10-1-fixed.html')">📝 仕訳を記録</button>
+      <button class="quick-btn" onclick="openApp('zeimu-kokuzei.html')">🏛️ 税金を調べる</button>
+      <button class="quick-btn" onclick="openApp('zeimu-setsuzei.html')">💰 節税シミュレーション</button>
+      <button class="quick-btn" onclick="openApp('zeimu-setsuzei.html?tab=hojo')">📋 補助金を探す</button>
+      <button class="quick-btn" onclick="openApp('zeimu-setsuzei.html?tab=furusato')">🎁 ふるさと納税</button>
+    </div>
+
+    <!-- メインアプリ -->
+    <div class="sec-title">税務管理</div>
+    <div class="app-grid">
+      <a class="app-card theme-tax featured" onclick="openApp('zeimu-ai-v10-1-fixed.html')">
+        <div class="app-icon">📊</div>
+        <div>
+          <div class="app-name">税務アプリ</div>
+          <div class="app-desc">仕訳帳・確定申告・消費税・レシート解析・通帳読み込み・税務書類</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- 専門ボット -->
+    <div class="sec-title">AI専門ボット</div>
+    <div class="app-grid">
+      <a class="app-card theme-kokuzei" onclick="openApp('zeimu-kokuzei.html')">
+        <div class="app-badge badge-ai">AI</div>
+        <div class="app-icon">🏛️</div>
+        <div class="app-name">国税庁ボット</div>
+        <div class="app-desc">確定申告・インボイス・e-Tax・タックスアンサー完全対応</div>
+      </a>
+      <a class="app-card theme-setsuzei" onclick="openApp('zeimu-setsuzei.html')">
+        <div class="app-badge badge-new">NEW</div>
+        <div class="app-icon">💰</div>
+        <div class="app-name">節税・補助金</div>
+        <div class="app-desc">建設業向け補助金・持続化・IT導入・ものづくり補助金</div>
+      </a>
+    </div>
+
+    <!-- 資産形成 -->
+    <div class="sec-title">資産形成・税制優遇</div>
+    <div class="app-grid">
+      <a class="app-card theme-nisa" onclick="openApp('zeimu-setsuzei.html?tab=nisa')">
+        <div class="app-badge badge-hot">人気</div>
+        <div class="app-icon">📈</div>
+        <div class="app-name">新NISA</div>
+        <div class="app-desc">成長投資枠240万・つみたて120万・非課税戦略</div>
+      </a>
+      <a class="app-card theme-ideco" onclick="openApp('zeimu-setsuzei.html?tab=ideco')">
+        <div class="app-icon">🏦</div>
+        <div class="app-name">iDeCo</div>
+        <div class="app-desc">月68,000円全額控除・節税効果をシミュレーション</div>
+      </a>
+      <a class="app-card theme-furusato" onclick="openApp('zeimu-setsuzei.html?tab=furusato')">
+        <div class="app-icon">🎁</div>
+        <div class="app-name">ふるさと納税</div>
+        <div class="app-desc">控除上限額計算・2000円で高額返礼品</div>
+      </a>
+      <a class="app-card theme-setsuzei" onclick="openApp('zeimu-setsuzei.html?tab=kyosai')">
+        <div class="app-icon">🛡️</div>
+        <div class="app-name">共済・保険</div>
+        <div class="app-desc">小規模企業共済・経営セーフティ・節税効果</div>
+      </a>
+    </div>
+
+    <!-- 最近の仕訳 -->
+    <div class="sec-title">最近の仕訳</div>
+    <div class="journal-list" id="journalList">
+      <div class="loading">読み込み中...</div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+import { getFirestore, collection, getDocs, query, orderBy, limit, where }
+  from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCVk2miG5TK1ffTofXLh0hHgeSbOvmIgZ8",
+  authDomain: "kensetsu-nippo-842a2.firebaseapp.com",
+  projectId: "kensetsu-nippo-842a2",
+  storageBucket: "kensetsu-nippo-842a2.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.__fb = { auth, db, collection, getDocs, query, orderBy, limit, where,
+  signInWithEmailAndPassword };
+
+onAuthStateChanged(auth, async function(user) {
+  if (user) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainScreen').style.display = 'block';
+    document.getElementById('headerUser').style.display = 'block';
+    document.getElementById('headerName').textContent = user.email.split('@')[0];
+    await loadDashboard(user.uid);
+  } else {
+    document.getElementById('loginScreen').style.display = 'block';
+    document.getElementById('mainScreen').style.display = 'none';
+    document.getElementById('headerUser').style.display = 'none';
+  }
+});
+</script>
+
+<script>
+var FUNC_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  ? 'http://localhost:5001/kensetsu-nippo-842a2/us-central1'
+  : 'https://us-central1-kensetsu-nippo-842a2.cloudfunctions.net';
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+async function doLogin() {
+  var email = document.getElementById('lEmail').value.trim();
+  var pass = document.getElementById('lPass').value;
+  var errEl = document.getElementById('loginErr');
+  errEl.style.display = 'none';
+  if (!email || !pass) { errEl.style.display = 'block'; return; }
+  try {
+    var fb = window.__fb;
+    await fb.signInWithEmailAndPassword(fb.auth, email, pass);
+  } catch(e) {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function openApp(filename) {
+  // 同一フォルダの子アプリを開く
+  var base = location.href.replace(/[^/]*$/, '');
+  window.location.href = base + filename;
+}
+
+async function loadDashboard(uid) {
+  try {
+    var fb = window.__fb;
+    var now = new Date();
+    var thisMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+
+    // 今月の仕訳を取得
+    var snap = await fb.getDocs(
+      fb.query(fb.collection(fb.db, 'zeimu_journals'),
+        fb.orderBy('createdAt','desc'), fb.limit(50))
+    );
+
+    var journals = snap.docs.map(function(d) { return d.data(); });
+    var monthJournals = journals.filter(function(j) {
+      return j.date && j.date.startsWith(thisMonth);
+    });
+
+    // サマリー計算
+    var income = 0, expense = 0;
+    monthJournals.forEach(function(j) {
+      if (j.type === 'income') income += (j.amount||0);
+      else expense += (j.amount||0);
+    });
+    var profit = income - expense;
+
+    function fmt(n) {
+      if (n >= 10000) return Math.round(n/10000) + '万';
+      return n.toLocaleString();
+    }
+
+    document.getElementById('sumIncome').textContent = fmt(income) + '円';
+    document.getElementById('sumExpense').textContent = fmt(expense) + '円';
+    document.getElementById('sumProfit').textContent = fmt(profit) + '円';
+    document.getElementById('sumProfit').style.color = profit >= 0 ? '#a5d6a7' : '#ef9a9a';
+
+    // 最近の仕訳5件
+    var recent = journals.slice(0, 5);
+    var listEl = document.getElementById('journalList');
+    if (recent.length === 0) {
+      listEl.innerHTML = '<div class="loading">仕訳データがありません</div>';
+      return;
+    }
+    listEl.innerHTML = recent.map(function(j) {
+      var isIncome = j.type === 'income';
+      var amount = (j.amount||0).toLocaleString();
+      return '<div class="journal-item">'
+        + '<div class="j-type ' + (isIncome?'income':'expense') + '">'
+        + (isIncome?'💰':'💸') + '</div>'
+        + '<div class="j-info">'
+        + '<div class="j-subject">' + (j.subject||j.memo||'仕訳') + '</div>'
+        + '<div class="j-date">' + (j.date||'') + ' · ' + (j.debit||'') + '</div>'
+        + '</div>'
+        + '<div class="j-amount ' + (isIncome?'income':'expense') + '">'
+        + (isIncome?'+':'-') + amount + '円</div>'
+        + '</div>';
+    }).join('');
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('journalList').innerHTML =
+      '<div class="loading">データを読み込めませんでした</div>';
+  }
+}
+</script>
+</body>
+</html>
