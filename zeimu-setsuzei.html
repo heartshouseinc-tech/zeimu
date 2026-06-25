@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>節税・補助金AIボット | 税務ハブ</title>
+<style>
+:root{
+  --ink:#0f1a0f;
+  --green:#2e7d32;
+  --green2:#388e3c;
+  --green-dim:#e8f5e9;
+  --gold:#c9a84c;
+  --purple:#6a1b9a;
+  --purple-dim:#f3e5f5;
+  --red:#c62828;
+  --blue:#1565c0;
+  --blue-dim:#e3f2fd;
+  --teal:#00695c;
+  --teal-dim:#e0f2f1;
+  --pink:#c62828;
+  --pink-dim:#fce4ec;
+  --bg:#f1f8f1;
+  --card:#ffffff;
+  --border:#d8ecd8;
+  --text2:#5a7060;
+  --shadow:0 2px 12px rgba(46,125,50,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Helvetica Neue',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+
+.header{background:linear-gradient(135deg,var(--ink),#1a2e1a);padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;flex-shrink:0}
+.back-btn{background:rgba(255,255,255,.1);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;flex-shrink:0}
+.header-icon{width:36px;height:36px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.header-title{font-size:15px;font-weight:800;color:#fff}
+.header-sub{font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.1em;margin-top:1px}
+
+/* タブ */
+.tabs{display:flex;background:var(--card);border-bottom:2px solid var(--border);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:10px 14px;font-size:11px;font-weight:700;border:none;background:none;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* パネル */
+.panel{display:none;flex:1;flex-direction:column;overflow:hidden}
+.panel.active{display:flex}
+
+/* チャットエリア */
+.chat-area{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{display:flex;gap:8px;align-items:flex-end}
+.msg.user{flex-direction:row-reverse}
+.msg-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.msg-avatar.bot{background:linear-gradient(135deg,var(--green),var(--green2))}
+.msg-avatar.user{background:linear-gradient(135deg,#546e7a,#37474f)}
+.msg-bubble{max-width:85%;padding:10px 14px;border-radius:16px;font-size:12px;line-height:1.7;word-break:break-word}
+.msg.bot .msg-bubble{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+.msg.user .msg-bubble{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border-bottom-right-radius:4px}
+.msg-time{font-size:9px;color:var(--text2);margin-top:3px}
+.msg.user .msg-time{text-align:right}
+.typing{display:flex;gap:4px;padding:12px 16px;background:var(--card);border-radius:16px;border:1px solid var(--border);width:fit-content}
+.typing span{width:6px;height:6px;background:var(--green);border-radius:50%;animation:bounce .8s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* 入力 */
+.input-area{background:var(--card);border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+.input-box{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:10px 14px;font-size:13px;font-family:inherit;resize:none;outline:none;min-height:42px;max-height:120px;line-height:1.4;transition:border .15s}
+.input-box:focus{border-color:var(--green)}
+.send-btn{width:42px;height:42px;background:linear-gradient(135deg,var(--green),var(--green2));border:none;border-radius:50%;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(46,125,50,.3)}
+.send-btn:disabled{background:#ccc;box-shadow:none}
+.mic-btn{width:36px;height:36px;background:var(--green-dim);border:1px solid rgba(46,125,50,.2);border-radius:50%;color:var(--green);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+
+/* クイックタグ */
+.tags-wrap{background:var(--card);border-bottom:1px solid var(--border);padding:8px 12px;flex-shrink:0}
+.tags-label{font-size:9px;color:var(--text2);font-weight:700;letter-spacing:.1em;margin-bottom:5px}
+.tags-row{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.tags-row::-webkit-scrollbar{display:none}
+.tag{flex-shrink:0;padding:5px 11px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid;white-space:nowrap}
+.tag-green{background:var(--green-dim);color:var(--green);border-color:rgba(46,125,50,.25)}
+.tag-purple{background:var(--purple-dim);color:var(--purple);border-color:rgba(106,27,154,.25)}
+.tag-teal{background:var(--teal-dim);color:var(--teal);border-color:rgba(0,105,92,.25)}
+.tag-pink{background:var(--pink-dim);color:var(--pink);border-color:rgba(198,40,40,.25)}
+.tag-blue{background:var(--blue-dim);color:var(--blue);border-color:rgba(21,101,192,.25)}
+
+/* シミュレーターパネル */
+.sim-area{flex:1;overflow-y:auto;padding:12px}
+.sim-card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.sim-title{font-size:13px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sim-badge{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700}
+.badge-green{background:var(--green-dim);color:var(--green)}
+.badge-purple{background:var(--purple-dim);color:var(--purple)}
+.badge-teal{background:var(--teal-dim);color:var(--teal)}
+.badge-pink{background:var(--pink-dim);color:var(--pink)}
+.form-row{margin-bottom:10px}
+.form-label{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:4px;display:block}
+.form-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;transition:border .15s}
+.form-input:focus{border-color:var(--green)}
+.calc-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px}
+.result-box{background:var(--green-dim);border:1px solid rgba(46,125,50,.2);border-radius:10px;padding:12px;margin-top:10px;display:none}
+.result-title{font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px}
+.result-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px}
+.result-val{font-weight:800;font-size:15px;color:var(--green)}
+.result-sub{font-size:10px;color:var(--text2);margin-top:2px}
+.result-box.purple{background:var(--purple-dim);border-color:rgba(106,27,154,.2)}
+.result-box.purple .result-title{color:var(--purple)}
+.result-box.purple .result-val{color:var(--purple)}
+.result-box.teal{background:var(--teal-dim);border-color:rgba(0,105,92,.2)}
+.result-box.teal .result-title{color:var(--teal)}
+.result-box.teal .result-val{color:var(--teal)}
+.result-box.pink{background:var(--pink-dim);border-color:rgba(198,40,40,.2)}
+.result-box.pink .result-title{color:var(--pink)}
+.result-box.pink .result-val{color:var(--pink)}
+
+/* トースト */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 18px;border-radius:16px;font-size:11px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="back-btn" onclick="goHub()">⌂</button>
+  <div class="header-icon">💰</div>
+  <div>
+    <div class="header-title">節税・補助金AIボット</div>
+    <div class="header-sub">NISA・iDeCo・ふるさと納税・補助金</div>
+  </div>
+</div>
+
+<!-- タブ -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('chat')" id="tab-chat">💬 AIチャット</button>
+  <button class="tab" onclick="switchTab('sim')" id="tab-sim">🧮 シミュレーター</button>
+  <button class="tab" onclick="switchTab('hojo')" id="tab-hojo">📋 補助金</button>
+</div>
+
+<!-- AIチャットパネル -->
+<div class="panel active" id="panel-chat">
+  <div class="tags-wrap">
+    <div class="tags-label">カテゴリ別クイック質問</div>
+    <div class="tags-row" id="tagsRow"></div>
+  </div>
+  <div class="chat-area" id="chatArea"></div>
+  <div class="input-area">
+    <div class="input-row">
+      <button class="mic-btn" onclick="startVoice()" id="micBtn">🎤</button>
+      <textarea class="input-box" id="inputBox" placeholder="節税・補助金・NISAなど何でも聞いてください"
+        rows="1" onkeydown="onKD(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMsg()">▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- シミュレーターパネル -->
+<div class="panel" id="panel-sim">
+  <div class="sim-area">
+
+    <!-- ふるさと納税 -->
+    <div class="sim-card">
+      <div class="sim-title">🎁 ふるさと納税 控除上限額計算<span class="sim-badge badge-pink">人気</span></div>
+      <div class="form-row">
+        <label class="form-label">年収（万円）</label>
+        <input class="form-input" type="number" id="ft-income" placeholder="例：500">
+      </div>
+      <div class="form-row">
+        <label class="form-label">家族構成</label>
+        <select class="form-input" id="ft-family">
+          <option value="single">独身・共働き（配偶者控除なし）</option>
+          <option value="spouse">配偶者あり（専業主婦/夫）</option>
+          <option value="child1">配偶者＋子1人（16歳未満）</option>
+          <option value="child2">配偶者＋子2人（16歳未満）</option>
+          <option value="child_hs">配偶者＋高校生1人</option>
+          <option value="child_uni">配偶者＋大学生1人</option>
+        </select>
+      </div>
+      <button class="calc-btn" onclick="calcFurusato()">🧮 控除上限額を計算</button>
+      <div class="result-box pink" id="ft-result">
+        <div class="result-title">🎁 ふるさと納税 計算結果</div>
+        <div class="result-row"><span>控除上限額</span><span class="result-val" id="ft-limit">-</span></div>
+        <div class="result-row"><span>実質負担</span><span style="font-weight:700">2,000円</span></div>
+        <div class="result-row"><span>お得な返礼品の目安</span><span class="result-val" id="ft-goods">-</span></div>
+        <div class="result-sub" id="ft-note"></div>
+      </div>
+    </div>
+
+    <!-- iDeCo -->
+    <div class="sim-card">
+      <div class="sim-title">🏦 iDeCo 節税効果計算<span class="sim-badge badge-teal">節税大</span></div>
+      <div class="form-row">
+        <label class="form-label">職業</label>
+        <select class="form-input" id="id-type">
+          <option value="jigyonushi">個人事業主・フリーランス</option>
+          <option value="kaisha">会社員（企業年金なし）</option>
+          <option value="kaisha2">会社員（企業年金あり）</option>
+          <option value="shufu">専業主婦・夫</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">年収または課税所得（万円）</label>
+        <input class="form-input" type="number" id="id-income" placeholder="例：500">
+      </div>
+      <div class="form-row">
+        <label class="form-label">月額掛金（円）</label>
+        <input class="form-input" type="number" id="id-monthly" placeholder="個人事業主は最大68,000円">
+      </div>
+      <button class="calc-btn" style="background:linear-gradient(135deg,var(--teal),#00796b)" onclick="calcIdeco()">🧮 節税効果を計算</button>
+      <div class="result-box teal" id="id-result">
+        <div class="result-title">🏦 iDeCo 計算結果</div>
+        <div class="result-row"><span>年間掛金</span><span class="result-val" id="id-annual">-</span></div>
+        <div class="result-row"><span>所得税節税額（概算）</span><span class="result-val" id="id-tax">-</span></div>
+        <div class="result-row"><span>住民税節税額（概算）</span><span class="result-val" id="id-local">-</span></div>
+        <div class="result-row"><span>年間合計節税額</span><span class="result-val" id="id-total">-</span></div>
+        <div class="result-row"><span>月額掛金上限</span><span class="result-val" id="id-max">-</span></div>
+        <div class="result-sub" id="id-note"></div>
+      </div>
+    </div>
+
+    <!-- 新NISA -->
+    <div class="sim-card">
+      <div class="sim-title">📈 新NISA 運用シミュレーション<span class="sim-badge badge-purple">非課税</span></div>
+      <div class="form-row">
+        <label class="form-label">毎月積立額（円）</label>
+        <input class="form-input" type="number" id="ns-monthly" placeholder="例：30000">
+      </div>
+      <div class="form-row">
+        <label class="form-label">年間一括投資額（成長投資枠・円）</label>
+        <input class="form-input" type="number" id="ns-lump" placeholder="最大2,400,000円">
+      </div>
+      <div class="form-row">
+        <label class="form-label">想定利回り（%）</label>
+        <select class="form-input" id="ns-rate">
+          <option value="3">3%（保守的）</option>
+          <option value="5" selected>5%（標準）</option>
+          <option value="7">7%（積極的）</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">運用期間（年）</label>
+        <input class="form-input" type="number" id="ns-years" placeholder="例：20">
+      </div>
+      <button class="calc-btn" style="background:linear-gradient(135deg,var(--purple),#7b1fa2)" onclick="calcNisa()">🧮 運用シミュレーション</button>
+      <div class="result-box purple" id="ns-result">
+        <div class="result-title">📈 新NISA 運用結果</div>
+        <div class="result-row"><span>総投資額</span><span class="result-val" id="ns-invest">-</span></div>
+        <div class="result-row"><span>運用益（非課税）</span><span class="result-val" id="ns-gain">-</span></div>
+        <div class="result-row"><span>最終資産額</span><span class="result-val" id="ns-total">-</span></div>
+        <div class="result-row"><span>通常課税なら税金</span><span style="font-weight:700;color:#c62828" id="ns-taxsaved">-</span></div>
+        <div class="result-sub" id="ns-note"></div>
+      </div>
+    </div>
+
+    <!-- 総合節税シミュレーション -->
+    <div class="sim-card">
+      <div class="sim-title">💰 総合節税シミュレーション<span class="sim-badge badge-green">おすすめ</span></div>
+      <div class="form-row">
+        <label class="form-label">年収（万円）</label>
+        <input class="form-input" type="number" id="total-income" placeholder="例：600">
+      </div>
+      <div class="form-row">
+        <label class="form-label">業種</label>
+        <select class="form-input" id="total-type">
+          <option value="kensetsu">建設業・大工（個人事業主）</option>
+          <option value="service">サービス業（個人事業主）</option>
+          <option value="company">中小企業経営者</option>
+          <option value="employee">会社員</option>
+        </select>
+      </div>
+      <button class="calc-btn" onclick="calcTotal()">🧮 最適な節税プランを計算</button>
+      <div class="result-box" id="total-result">
+        <div class="result-title">💰 あなたの節税プラン</div>
+        <div id="total-content"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 補助金パネル -->
+<div class="panel" id="panel-hojo">
+  <div class="tags-wrap">
+    <div class="tags-label">補助金カテゴリ</div>
+    <div class="tags-row" id="hojoTags"></div>
+  </div>
+  <div class="chat-area" id="hojoArea"></div>
+  <div class="input-area">
+    <div class="input-row">
+      <button class="mic-btn" onclick="startVoiceHojo()" id="micBtnHojo">🎤</button>
+      <textarea class="input-box" id="hojoBox" placeholder="補助金・助成金について質問..."
+        rows="1" onkeydown="onKDHojo(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" style="background:linear-gradient(135deg,var(--blue),#1976d2)"
+        id="hojoBtnSend" onclick="sendHojo()">▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+import { getAuth, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+import { getFirestore, collection, addDoc, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+const firebaseConfig = {
+  apiKey: "AIzaSyCVk2miG5TK1ffTofXLh0hHgeSbOvmIgZ8",
+  authDomain: "kensetsu-nippo-842a2.firebaseapp.com",
+  projectId: "kensetsu-nippo-842a2",
+  storageBucket: "kensetsu-nippo-842a2.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+window.__fb = { auth, db, collection, addDoc, serverTimestamp };
+onAuthStateChanged(auth, function(user) {
+  if (!user) { window.location.href = 'index.html'; }
+  else { window.__user = user; }
+});
+</script>
+
+<script>
+var FUNC_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  ? 'http://localhost:5001/kensetsu-nippo-842a2/us-central1'
+  : 'https://us-central1-kensetsu-nippo-842a2.cloudfunctions.net';
+var HH_KEY = 'HeartsHouse2026Key';
+var _history = [];
+var _hojoHistory = [];
+var _sending = false;
+var _sendingHojo = false;
+
+// タブURLパラメータ対応
+(function checkUrlTab() {
+  var hash = location.search;
+  if (hash.includes('tab=hojo')) { setTimeout(function(){ switchTab('hojo'); }, 100); }
+  else if (hash.includes('tab=sim')) { setTimeout(function(){ switchTab('sim'); }, 100); }
+  else if (hash.includes('tab=nisa')) { setTimeout(function(){ switchTab('sim'); }, 100); }
+  else if (hash.includes('tab=ideco')) { setTimeout(function(){ switchTab('sim'); }, 100); }
+  else if (hash.includes('tab=furusato')) { setTimeout(function(){ switchTab('sim'); }, 100); }
+  else if (hash.includes('tab=kyosai')) { initKyosaiChat(); }
+})();
+
+// クイックタグ
+var QUICK_TAGS = [
+  {text:'iDeCoで節税', cls:'tag-teal'},
+  {text:'ふるさと納税の上限は？', cls:'tag-pink'},
+  {text:'新NISAの始め方', cls:'tag-purple'},
+  {text:'建設業の節税方法', cls:'tag-green'},
+  {text:'小規模企業共済とは？', cls:'tag-green'},
+  {text:'経営セーフティ共済', cls:'tag-green'},
+  {text:'青色申告65万控除', cls:'tag-blue'},
+  {text:'消費税2割特例', cls:'tag-blue'},
+  {text:'少額減価償却とは？', cls:'tag-green'},
+];
+var HOJO_TAGS = [
+  {text:'建設業向け補助金', cls:'tag-blue'},
+  {text:'小規模事業者持続化補助金', cls:'tag-green'},
+  {text:'IT導入補助金', cls:'tag-teal'},
+  {text:'ものづくり補助金', cls:'tag-purple'},
+  {text:'今すぐ使える補助金は？', cls:'tag-pink'},
+  {text:'補助金申請の書き方', cls:'tag-blue'},
+];
+
+(function init() {
+  var row = document.getElementById('tagsRow');
+  QUICK_TAGS.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className = 'tag ' + t.cls;
+    btn.textContent = t.text;
+    btn.onclick = function() { sendQuick(t.text); };
+    row.appendChild(btn);
+  });
+  var hojoRow = document.getElementById('hojoTags');
+  HOJO_TAGS.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className = 'tag ' + t.cls;
+    btn.textContent = t.text;
+    btn.onclick = function() { sendHojoQuick(t.text); };
+    hojoRow.appendChild(btn);
+  });
+  addBotMsg('chatArea', '💰 こんにちは！節税・補助金AIボットです。\n\niDeCo・新NISA・ふるさと納税・小規模企業共済・補助金など、お金を守り増やす方法を建設業・個人事業主の視点でアドバイスします。\n\n上のタブから「シミュレーター」で具体的な金額計算もできます！');
+  addBotMsg('hojoArea', '📋 補助金AIボットです。\n\n建設業・小規模事業者が使える補助金・助成金をGoogle検索で最新情報を調べてお伝えします。\n\n「今すぐ使える補助金は？」から始めてみてください！');
+})();
+
+function goHub() { window.location.href = 'index.html'; }
+
+function switchTab(name) {
+  ['chat','sim','hojo'].forEach(function(t) {
+    document.getElementById('tab-' + t).classList.toggle('active', t === name);
+    document.getElementById('panel-' + t).classList.toggle('active', t === name);
+  });
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+function nowTime() {
+  var d = new Date();
+  return ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+}
+
+function addBotMsg(areaId, text) {
+  var area = document.getElementById(areaId);
+  if (!area) return;
+  var div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = '<div class="msg-avatar bot">💰</div>'
+    + '<div><div class="msg-bubble">' + text.split('\n').join('<br>') + '</div>'
+    + '<div class="msg-time">' + nowTime() + '</div></div>';
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function addUserMsg(areaId, text) {
+  var area = document.getElementById(areaId);
+  if (!area) return;
+  var div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = '<div class="msg-avatar user">👤</div>'
+    + '<div><div class="msg-bubble">' + text.replace(/</g,'&lt;').split('\n').join('<br>') + '</div>'
+    + '<div class="msg-time">' + nowTime() + '</div></div>';
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping(areaId) {
+  var area = document.getElementById(areaId);
+  if (!area) return;
+  var div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing-' + areaId;
+  div.innerHTML = '<div class="msg-avatar bot">💰</div>'
+    + '<div class="typing"><span></span><span></span><span></span></div>';
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function hideTyping(areaId) {
+  var t = document.getElementById('typing-' + areaId);
+  if (t) t.remove();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function onKD(e) { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function onKDHojo(e) { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendHojo();} }
+function sendQuick(t) { document.getElementById('inputBox').value=t; sendMsg(); }
+function sendHojoQuick(t) { document.getElementById('hojoBox').value=t; sendHojo(); }
+
+var SYS_SETSUZEI = [
+  'あなたは中小企業・個人事業主の節税と資産形成の世界最高のスペシャリストです。',
+  '今日の日付: ' + new Date().getFullYear() + '年' + (new Date().getMonth()+1) + '月' + new Date().getDate() + '日',
+  '',
+  '【専門領域】',
+  '・iDeCo（個人事業主は月68,000円、全額所得控除）',
+  '・新NISA（成長投資枠240万・つみたて投資枠120万、非課税）',
+  '・ふるさと納税（控除上限額計算・ワンストップ特例）',
+  '・小規模企業共済（月70,000円、全額所得控除）',
+  '・経営セーフティ共済（月200,000円、全額損金）',
+  '・青色申告特別控除65万円',
+  '・少額減価償却（30万円未満即時償却）',
+  '・消費税2割特例・簡易課税',
+  '・建設業向け節税（工具・材料・外注費・車両）',
+  '',
+  '【回答ルール】',
+  '・節税効果は必ず金額で計算して示す',
+  '・建設業・個人事業主に特化した実践的なアドバイス',
+  '・Google検索で最新情報を確認してから回答',
+  '・複数の選択肢を優先度順に提示する',
+].join('\n');
+
+var SYS_HOJO = [
+  'あなたは中小企業・建設業の補助金申請の世界最高のスペシャリストです。',
+  '今日の日付: ' + new Date().getFullYear() + '年' + (new Date().getMonth()+1) + '月' + new Date().getDate() + '日',
+  '',
+  '【専門領域】',
+  '・小規模事業者持続化補助金（上限200万円）',
+  '・IT導入補助金（上限450万円）',
+  '・ものづくり補助金（上限1,250万円）',
+  '・事業再構築補助金',
+  '・建設業向け助成金・補助金',
+  '・都道府県・市区町村の補助金',
+  '・雇用関係助成金（厚生労働省）',
+  '',
+  '【回答ルール】',
+  '・Google検索で最新の締切・金額・条件を確認する',
+  '・申請条件・金額・締切を明確に示す',
+  '・建設業・個人事業主が使いやすい補助金を優先',
+  '・申請書の書き方も具体的にアドバイス',
+].join('\n');
+
+async function sendMsg() {
+  if (_sending) return;
+  var input = document.getElementById('inputBox');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = ''; input.style.height = 'auto';
+  _sending = true;
+  document.getElementById('sendBtn').disabled = true;
+  addUserMsg('chatArea', text);
+  _history.push({role:'user', content:text});
+  showTyping('chatArea');
+  try {
+    var r = await fetch(FUNC_BASE + '/askAI', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-access-key':HH_KEY},
+      body: JSON.stringify({
+        prompt: SYS_SETSUZEI + '\n\n質問: ' + text,
+        model: 'gemini-2.5-flash',
+        mode: 'tax',
+        useSearch: true,
+        messages: _history.slice(-10)
+      })
+    });
+    var d = await r.json();
+    var reply = d?.data?.text || d?.candidates?.[0]?.content?.parts?.[0]?.text || d?.text || 'エラーが発生しました';
+    hideTyping('chatArea');
+    _history.push({role:'assistant', content:reply});
+    addBotMsg('chatArea', reply);
+  } catch(e) {
+    hideTyping('chatArea');
+    addBotMsg('chatArea', 'エラー: ' + e.message);
+  } finally {
+    _sending = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+async function sendHojo() {
+  if (_sendingHojo) return;
+  var input = document.getElementById('hojoBox');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = ''; input.style.height = 'auto';
+  _sendingHojo = true;
+  document.getElementById('hojoBtnSend').disabled = true;
+  addUserMsg('hojoArea', text);
+  _hojoHistory.push({role:'user', content:text});
+  showTyping('hojoArea');
+  try {
+    var r = await fetch(FUNC_BASE + '/askAI', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-access-key':HH_KEY},
+      body: JSON.stringify({
+        prompt: SYS_HOJO + '\n\n質問: ' + text,
+        model: 'gemini-2.5-flash',
+        mode: 'tax',
+        useSearch: true,
+        messages: _hojoHistory.slice(-10)
+      })
+    });
+    var d = await r.json();
+    var reply = d?.data?.text || d?.candidates?.[0]?.content?.parts?.[0]?.text || d?.text || 'エラー';
+    hideTyping('hojoArea');
+    _hojoHistory.push({role:'assistant', content:reply});
+    addBotMsg('hojoArea', reply);
+  } catch(e) {
+    hideTyping('hojoArea');
+    addBotMsg('hojoArea', 'エラー: ' + e.message);
+  } finally {
+    _sendingHojo = false;
+    document.getElementById('hojoBtnSend').disabled = false;
+  }
+}
+
+// ===== ふるさと納税計算 =====
+function calcFurusato() {
+  var income = parseInt(document.getElementById('ft-income').value) || 0;
+  var family = document.getElementById('ft-family').value;
+  if (income <= 0) { showToast('年収を入力してください'); return; }
+  var limit = 0;
+  var table = {
+    single:    [[195,5000],[295,10000],[395,20000],[495,30000],[595,42000],[695,52000],[795,62000],[895,72000],[999,82000],[1199,102000],[1499,122000],[1799,152000],[2099,172000],[2399,202000],[2699,232000],[2999,252000],[3299,282000],[3999,322000],[4999,392000],[9999,492000]],
+    spouse:    [[195,5000],[295,10000],[395,16000],[495,26000],[595,32000],[695,44000],[795,54000],[895,64000],[999,78000],[1199,98000],[1499,118000],[1799,148000],[2099,168000],[2399,198000],[2699,228000],[2999,248000],[3299,278000],[3999,318000],[4999,388000],[9999,488000]],
+    child1:    [[195,5000],[295,10000],[395,10000],[495,22000],[595,28000],[695,40000],[795,50000],[895,60000],[999,72000],[1199,92000],[1499,112000],[1799,142000],[2099,162000],[2399,192000],[2699,222000],[2999,242000],[3299,272000],[3999,312000],[4999,382000],[9999,482000]],
+    child2:    [[195,5000],[295,5000],[395,5000],[495,16000],[595,22000],[695,34000],[795,44000],[895,56000],[999,66000],[1199,86000],[1499,106000],[1799,136000],[2099,156000],[2399,186000],[2699,216000],[2999,236000],[3299,266000],[3999,306000],[4999,376000],[9999,476000]],
+    child_hs:  [[295,5000],[395,5000],[495,8000],[595,14000],[695,26000],[795,36000],[895,48000],[999,60000],[1199,80000],[1499,100000],[1799,130000],[2099,150000],[2399,180000],[2699,210000],[2999,230000],[3299,260000],[3999,300000],[4999,370000],[9999,460000]],
+    child_uni: [[295,5000],[395,10000],[495,20000],[595,30000],[695,42000],[795,52000],[895,62000],[999,74000],[1199,94000],[1499,114000],[1799,144000],[2099,164000],[2399,194000],[2699,224000],[2999,244000],[3299,274000],[3999,314000],[4999,384000],[9999,484000]],
+  };
+  var t = table[family] || table['single'];
+  for (var i = 0; i < t.length; i++) {
+    if (income <= t[i][0]) { limit = t[i][1]; break; }
+  }
+  if (!limit) limit = t[t.length-1][1];
+  var goods = Math.round(limit * 0.3);
+  document.getElementById('ft-limit').textContent = limit.toLocaleString() + '円';
+  document.getElementById('ft-goods').textContent = goods.toLocaleString() + '円相当';
+  document.getElementById('ft-note').textContent = '※ワンストップ特例制度を使えば確定申告不要（5自治体以内）';
+  document.getElementById('ft-result').style.display = 'block';
+}
+
+// ===== iDeCo計算 =====
+function calcIdeco() {
+  var type = document.getElementById('id-type').value;
+  var income = parseInt(document.getElementById('id-income').value) || 0;
+  var monthly = parseInt(document.getElementById('id-monthly').value) || 0;
+  var maxMap = {jigyonushi:68000, kaisha:23000, kaisha2:12000, shufu:23000};
+  var maxMonthly = maxMap[type] || 68000;
+  if (monthly > maxMonthly) { monthly = maxMonthly; showToast('月額上限は' + maxMonthly.toLocaleString() + '円です'); }
+  if (income <= 0 || monthly <= 0) { showToast('年収と月額掛金を入力してください'); return; }
+  var annual = monthly * 12;
+  var taxRate = 0;
+  if (income < 195) taxRate = 0.05;
+  else if (income < 330) taxRate = 0.10;
+  else if (income < 695) taxRate = 0.20;
+  else if (income < 900) taxRate = 0.23;
+  else if (income < 1800) taxRate = 0.33;
+  else if (income < 4000) taxRate = 0.40;
+  else taxRate = 0.45;
+  var incomeTax = Math.round(annual * taxRate);
+  var localTax = Math.round(annual * 0.10);
+  var total = incomeTax + localTax;
+  document.getElementById('id-annual').textContent = annual.toLocaleString() + '円';
+  document.getElementById('id-tax').textContent = incomeTax.toLocaleString() + '円';
+  document.getElementById('id-local').textContent = localTax.toLocaleString() + '円';
+  document.getElementById('id-total').textContent = total.toLocaleString() + '円';
+  document.getElementById('id-max').textContent = maxMonthly.toLocaleString() + '円/月';
+  document.getElementById('id-note').textContent = '※受取時は退職所得控除または公的年金等控除が適用';
+  document.getElementById('id-result').style.display = 'block';
+}
+
+// ===== 新NISA計算 =====
+function calcNisa() {
+  var monthly = parseInt(document.getElementById('ns-monthly').value) || 0;
+  var lump = parseInt(document.getElementById('ns-lump').value) || 0;
+  var rate = parseFloat(document.getElementById('ns-rate').value) / 100;
+  var years = parseInt(document.getElementById('ns-years').value) || 0;
+  if (years <= 0) { showToast('運用期間を入力してください'); return; }
+  var totalMonthly = 0, totalLump = 0;
+  var r = rate / 12;
+  if (monthly > 0) {
+    totalMonthly = monthly * ((Math.pow(1+r, years*12) - 1) / r) * (1+r);
+  }
+  if (lump > 0) {
+    totalLump = lump * (Math.pow(1+rate, years) - 1) / rate * (1 + rate);
+  }
+  var totalAsset = Math.round(totalMonthly + totalLump);
+  var totalInvest = monthly * 12 * years + lump * years;
+  var gain = totalAsset - totalInvest;
+  var taxSaved = Math.round(gain * 0.20315);
+  function fmt(n) {
+    if (n >= 100000000) return (Math.round(n/10000000)/10).toFixed(1) + '億円';
+    if (n >= 10000) return Math.round(n/10000) + '万円';
+    return n.toLocaleString() + '円';
+  }
+  document.getElementById('ns-invest').textContent = fmt(totalInvest);
+  document.getElementById('ns-gain').textContent = fmt(gain);
+  document.getElementById('ns-total').textContent = fmt(totalAsset);
+  document.getElementById('ns-taxsaved').textContent = fmt(taxSaved) + 'が非課税！';
+  document.getElementById('ns-note').textContent = '年間投資上限: つみたて枠120万円・成長枠240万円・生涯1,800万円';
+  document.getElementById('ns-result').style.display = 'block';
+}
+
+// ===== 総合節税計算 =====
+function calcTotal() {
+  var income = parseInt(document.getElementById('total-income').value) || 0;
+  var type = document.getElementById('total-type').value;
+  if (income <= 0) { showToast('年収を入力してください'); return; }
+  var taxRate = 0;
+  if (income < 195) taxRate = 0.15;
+  else if (income < 330) taxRate = 0.20;
+  else if (income < 695) taxRate = 0.30;
+  else if (income < 900) taxRate = 0.33;
+  else if (income < 1800) taxRate = 0.43;
+  else taxRate = 0.50;
+  var items = [];
+  var isJigyonushi = type === 'kensetsu' || type === 'service';
+  if (isJigyonushi) {
+    items.push({name:'iDeCo（月68,000円）', deduction:816000, saving: Math.round(816000*taxRate), color:'teal'});
+    items.push({name:'小規模企業共済（月70,000円）', deduction:840000, saving: Math.round(840000*taxRate), color:'green'});
+    items.push({name:'経営セーフティ共済（月200,000円）', deduction:2400000, saving: Math.round(2400000*taxRate), color:'green'});
+    items.push({name:'青色申告特別控除', deduction:650000, saving: Math.round(650000*taxRate), color:'blue'});
+  } else {
+    items.push({name:'iDeCo（月23,000円）', deduction:276000, saving: Math.round(276000*taxRate), color:'teal'});
+  }
+  var ftLimit = 0;
+  var ftTable = [[300,30000],[400,42000],[500,61000],[600,77000],[800,108000],[1000,129000],[1500,176000],[2000,235000],[9999,330000]];
+  for (var i=0;i<ftTable.length;i++) { if(income<=ftTable[i][0]){ftLimit=ftTable[i][1];break;} }
+  if (!ftLimit) ftLimit = ftTable[ftTable.length-1][1];
+  items.push({name:'ふるさと納税（控除上限'+ftLimit.toLocaleString()+'円）', deduction:ftLimit-2000, saving:ftLimit-2000, color:'pink'});
+  var totalDeduction = items.reduce(function(s,i){return s+i.deduction;},0);
+  var totalSaving = items.reduce(function(s,i){return s+i.saving;},0);
+  var colorMap = {green:'var(--green)',teal:'var(--teal)',blue:'var(--blue)',pink:'var(--pink)'};
+  var html = items.map(function(item) {
+    return '<div class="result-row"><span>' + item.name + '</span>'
+      + '<span style="font-weight:800;color:' + (colorMap[item.color]||'var(--green)') + '">'
+      + item.saving.toLocaleString() + '円節税</span></div>';
+  }).join('');
+  html += '<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">'
+    + '<div class="result-row"><span style="font-weight:700">合計節税効果</span>'
+    + '<span class="result-val">' + totalSaving.toLocaleString() + '円/年</span></div>'
+    + '<div class="result-sub">所得控除合計: ' + totalDeduction.toLocaleString() + '円'
+    + '<br>※概算値。実際の税額は確定申告で確定します</div></div>';
+  document.getElementById('total-content').innerHTML = html;
+  document.getElementById('total-result').style.display = 'block';
+}
+
+function initKyosaiChat() {
+  switchTab('chat');
+  document.getElementById('inputBox').value = '小規模企業共済と経営セーフティ共済について教えて';
+  setTimeout(sendMsg, 500);
+}
+
+function startVoice() {
+  if (!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){showToast('音声入力非対応');return;}
+  var SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  var rec = new SR(); rec.lang='ja-JP';
+  rec.onstart=function(){document.getElementById('micBtn').textContent='🔴';showToast('🎤 話してください...');};
+  rec.onresult=function(e){document.getElementById('inputBox').value=e.results[0][0].transcript;document.getElementById('micBtn').textContent='🎤';};
+  rec.onerror=function(){document.getElementById('micBtn').textContent='🎤';showToast('音声認識エラー');};
+  rec.onend=function(){document.getElementById('micBtn').textContent='🎤';};
+  rec.start();
+}
+function startVoiceHojo() {
+  if (!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){showToast('音声入力非対応');return;}
+  var SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  var rec = new SR(); rec.lang='ja-JP';
+  rec.onstart=function(){document.getElementById('micBtnHojo').textContent='🔴';showToast('🎤 話してください...');};
+  rec.onresult=function(e){document.getElementById('hojoBox').value=e.results[0][0].transcript;document.getElementById('micBtnHojo').textContent='🎤';};
+  rec.onerror=function(){document.getElementById('micBtnHojo').textContent='🎤';showToast('音声認識エラー');};
+  rec.onend=function(){document.getElementById('micBtnHojo').textContent='🎤';};
+  rec.start();
+}
+</script>
+</body>
+</html>
